@@ -40,7 +40,7 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 .blk .chead{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px dashed #00ff4155;background:rgba(255,0,0,.07)}
 .blk .prompt{color:var(--red);font-weight:bold;text-shadow:0 0 8px #ff0000;font-size:16px}
 .blk .cmd{flex:1;color:#7dff9b;font-weight:bold;font-size:14px;word-break:break-all;text-shadow:0 0 6px var(--grn)}
-.blk .res{padding:10px 12px;white-space:pre-wrap;word-break:break-word;font-size:13px;color:#eaffea;min-height:10px;line-height:1.8;text-shadow:0 0 4px #00ff4166;border-right:2px solid #00ff4133}
+.blk .res{padding:10px 12px;white-space:pre-wrap;word-break:break-word;font-size:13px;color:#eaffea;min-height:10px;max-height:38dvh;overflow-y:auto;line-height:1.8;text-shadow:0 0 4px #00ff4166;border-right:2px solid #00ff4133}
 .blk .res:empty{display:none}
 .cpy{display:block;width:100%;background:#001a00;color:#7dff9b;border:none;border-top:1px solid #00ff4133;padding:9px;font-size:13px;font-family:inherit}
 #end{height:4px}
@@ -75,17 +75,18 @@ setInterval(()=>{cx.fillStyle='rgba(0,0,0,.09)';cx.fillRect(0,0,cv.width,cv.heig
 cx.fillStyle='#00ff41';cx.font='14px monospace';
 for(let i=0;i<drops.length;i++){cx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*16,drops[i]*16);
 if(drops[i]*16>cv.height&&Math.random()>.975)drops[i]=0;drops[i]++;}},55);
-function scrollDown(){document.getElementById('end').scrollIntoView(false);}
+function scrollDown(){}
+function scrollTop(){window.scrollTo(0,0);}
 function newBlock(c){let d=document.createElement('div');d.className='blk';
 d.innerHTML='<div class="chead"><span class="prompt">➤</span><span class="cmd"></span></div><div class="res"></div><button class="cpy">📋 نسخ المخرجات</button>';
-d.querySelector('.cmd').textContent=c;out.appendChild(d);cur=d.querySelector('.res');
+d.querySelector('.cmd').textContent=c;out.prepend(d);cur=d.querySelector('.res');
 let my=cur;d.querySelector('.cpy').onclick=e=>{navigator.clipboard.writeText(my.textContent).then(()=>{e.target.textContent='✅ تم النسخ';setTimeout(()=>e.target.textContent='📋 نسخ المخرجات',1500);});};
-scrollDown();}
+scrollTop();}
 async function poll(){clearTimeout(pollT);try{
 let r=await fetch('/read?sid='+sid+'&off='+off);
 if(!r.ok)return retry();let j=await r.json();
 if(j.error)return loadSessions();
-if(j.data){if(!cur)newBlock('···');cur.textContent+=j.data;scrollDown();}
+if(j.data){if(!cur)newBlock('···');cur.textContent+=j.data;cur.scrollTop=cur.scrollHeight;}
 off=j.off;}catch(e){}pollT=setTimeout(poll,800);}
 function retry(){pollT=setTimeout(poll,2500);}
 async function loadSessions(){let r=await fetch('/api/sessions');
