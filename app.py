@@ -354,6 +354,13 @@ class H(BaseHTTPRequestHandler):
                 pass
             self.send_error(404)
             return
+        m = re.match(r"^/api/sessions/([A-Za-z0-9]+)$", u.path)
+        if m and m.group(1) in sessions:
+            if len(sessions) <= 1:
+                return self._send(json.dumps({"error": "last"}), "application/json")
+            kill_session(m.group(1))
+            return self._send('{"ok":1}', "application/json")
+        self.send_error(404)
 
     def do_PATCH(self):
         u = urlparse(self.path)
@@ -370,18 +377,6 @@ class H(BaseHTTPRequestHandler):
                 if s and name:
                     s["name"] = name
                     return self._send('{"ok":1}', "application/json")
-        self.send_error(404)
-
-    def do_DELETE(self):
-        u = urlparse(self.path)
-        if not authorized(self.headers):
-            return self._deny()
-        m = re.match(r"^/api/sessions/([A-Za-z0-9]+)$", u.path)
-        if m and m.group(1) in sessions:
-            if len(sessions) <= 1:
-                return self._send(json.dumps({"error": "last"}), "application/json")
-            kill_session(m.group(1))
-            return self._send('{"ok":1}', "application/json")
         self.send_error(404)
 
 
