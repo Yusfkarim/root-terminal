@@ -136,7 +136,8 @@ def spawn_shell_for(s):
                PATH="/data/.local/bin:/data/.npm/bin:" + os.environ.get("PATH", ""),
                PIP_TARGET="/data/.pylibs",
                PYTHONPATH="/data/.pylibs:" + os.environ.get("PYTHONPATH", ""),
-               NPM_CONFIG_PREFIX="/data/.npm")
+               NPM_CONFIG_PREFIX="/data/.npm",
+               TERM="xterm-256color", LINES="40", COLUMNS="100")
     try:
         cwd = "/data/work" if os.path.isdir("/data/work") else "/app"
     except Exception:
@@ -149,6 +150,8 @@ def spawn_shell_for(s):
     threading.Thread(target=drain, args=(s,), daemon=True).start()
 
 
+CLEAN = re.compile(r"\x1b\[[0-9;?]*[JK]|\x1b[H]|\x1bc")
+
 def drain(s):
     fd = s["m"]
     while True:
@@ -158,6 +161,15 @@ def drain(s):
                 chunk = os.read(fd, 65536)
                 if not chunk:
                     break
+                if CLEAN.search(chunk.decode("utf-8", "replace")):
+                    with lock:
+                        s["buf"] = bytearray()
+                        s["gen"] = s.get("gen", 0) + 1
+                    try:
+                        if os.path.isdir("/data"):
+                            open(buf_path(s.get("sid", "?")), "wb").close()
+                    except OSError:
+                        pass
                 clean = ANSI_STRIP.sub("", clean_chunk(chunk))
                 with lock:
                     s["buf"] += clean.encode()
@@ -181,7 +193,7 @@ def create_session(name, sid=None, buf=None):
         if sid in sessions:
             sid = "s" + secrets.token_hex(4)
         s = {"sid": sid, "name": name[:30] or "session",
-             "buf": bytearray(buf or b""),
+             "buf": bytearray(buf or b""), "gen": 0,
              "m": None, "p": None, "alive": True, "created": time.time()}
         sessions[sid] = s
     spawn_shell_for(s)
@@ -338,9 +350,11 @@ class H(BaseHTTPRequestHandler):
                     return self._send(json.dumps({"error": "no session"}), "application/json")
                 data = bytes(s["buf"][off:off + 65536])
                 total = len(s["buf"])
+                gen = s.get("gen", 0)
             return self._send(json.dumps(
                 {"data": data.decode("utf-8", "replace"),
-                 "off": off + len(data) if off <= total else total}),
+                 "off": off + len(data) if off <= total else total,
+                 "gen": gen}),
                 "application/json")
         self.send_error(404)
 
