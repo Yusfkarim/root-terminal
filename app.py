@@ -265,6 +265,8 @@ class H(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(b)))
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+        self.send_header("Pragma", "no-cache")
         if cookie:
             self.send_header("Set-Cookie", cookie)
         self.end_headers()
@@ -311,6 +313,7 @@ class H(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "image/png")
                 self.send_header("Content-Length", str(len(data)))
+                self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
                 self.end_headers()
                 self.wfile.write(data)
                 return

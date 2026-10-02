@@ -29,7 +29,12 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 @keyframes skullMove{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(0)}88%{transform:translateY(0) rotate(0)}89%{transform:translate(-2px,1px) rotate(-10deg)}91%{transform:translate(2px,-1px) rotate(10deg)}93%{transform:translate(-1px,0) rotate(-5deg)}95%{transform:translateY(0) rotate(0)}}
 .hskull{width:32px;height:32px;border-radius:9px;border:1px solid #ff000088;flex:none;animation:skullMove 4s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
 .bskull{width:36px;height:36px;border-radius:10px;border:1px solid #ff000088;flex:none;align-self:center;animation:skullMove 4s .7s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
-#dev{font-size:11px;color:#7dff9b;letter-spacing:1px;text-shadow:0 0 8px var(--grn);white-space:nowrap;direction:ltr;unicode-bidi:embed;animation:titleFlicker 6s infinite}
+#devbox{display:inline-flex;flex-direction:column;align-items:center;gap:0;padding:3px 14px 4px;border-radius:12px;border:1px solid transparent;background:linear-gradient(#0d0202,#050101) padding-box,linear-gradient(135deg,#ff0000,#00ff41,#ff0000,#00ff41) border-box;background-size:auto,250% 250%;animation:devBorder 3.5s linear infinite;box-shadow:0 0 14px #ff000088;flex:none}
+@keyframes devBorder{from{background-position:0 0,0 0}to{background-position:0 0,250% 250%}}
+#dev{font-size:14px;font-weight:bold;color:#fff;letter-spacing:2px;text-shadow:0 0 8px #00ff41,0 0 18px #00ff41;white-space:nowrap;direction:ltr;unicode-bidi:embed;animation:titleFlicker 6s infinite}
+.dskull{width:17px;height:17px;border-radius:5px;animation:skullMove 3s ease-in-out infinite}
+.hfill{flex:1 1 30px;min-width:20px;height:28px;background:url(/icon-192.png) repeat-x left center;background-size:28px 28px;opacity:.45;filter:drop-shadow(0 0 5px #ff0000);animation:hfillSlide 7s linear infinite}
+@keyframes hfillSlide{from{background-position-x:0}to{background-position-x:56px}}
 #lbox h1{color:var(--red);font-size:38px;letter-spacing:6px;margin:6px 0 2px;text-shadow:0 0 15px #ff0000;animation:titleFlicker 4.5s infinite}
 #lgo{animation:goPulse 2.4s ease-in-out infinite}
 #lbox p{color:var(--grn);font-size:14px;margin-bottom:20px;opacity:.8}
@@ -158,7 +163,7 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 <button id="lgo">⚡ دخول ⚡</button><div id="lerr"></div>
 </div></div>
 <div id="app" class="hidden">
-<div id="head"><button id="menu">☰</button><img class="hskull" src="/icon-192.png" alt="skull"><span id="root">☠ ROOT</span><span id="dev">Dev.Yousf_Alkurdi</span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span></div>
+<div id="head"><button id="menu">☰</button><img class="hskull" src="/icon-192.png" alt="skull"><span id="root">☠ ROOT</span><span id="devbox"><img class="dskull" src="/icon-192.png" alt=""><span id="dev">Dev.Yousf_Alkurdi</span><img class="dskull" src="/icon-192.png" alt=""></span><span class="hfill"></span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span></div>
 <div id="main">
 <div id="side"><h3><span id="panelT">☠ لوحة التحكم</span> <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
 <div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
@@ -223,42 +228,48 @@ fileName_q:{ar:'اكتب اسم الملف',ku:'ناوی فایل بنووسە',
  eupload:{ar:'⬆ رفع هنا',ku:'⬆ ئەپڵۆد بۆ ئێرە',en:'⬆ Upload here',ru:'⬆ Загрузить сюда'},
  loading:{ar:'... جار التحميل ...',ku:'... چاوەڕوانبە ...',en:'... loading ...',ru:'... загрузка ...'}};
 let _mResolve=null;
-function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(t._to);t._to=setTimeout(()=>t.classList.add('hidden'),1700);}
-function modal(opts){let m=document.getElementById('modal'),tx=document.getElementById('mtext'),inp=document.getElementById('minput'),ok=document.getElementById('mok'),can=document.getElementById('mcan');
+function toast(msg){let t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.remove('hidden');clearTimeout(t._to);t._to=setTimeout(()=>t.classList.add('hidden'),1700);}
+function modal(opts){let m=document.getElementById('modal');
+ if(!m){if(opts.input!==undefined){return Promise.resolve(prompt(opts.text||'',opts.input));}return Promise.resolve(confirm(opts.text||''));}
+ let tx=document.getElementById('mtext'),inp=document.getElementById('minput'),ok=document.getElementById('mok'),can=document.getElementById('mcan');
  tx.textContent=opts.text||'';if(opts.input!==undefined){inp.value=opts.input;inp.classList.remove('hidden');setTimeout(()=>inp.focus(),50);}else inp.classList.add('hidden');
  ok.textContent=opts.ok||T('mOk');can.textContent=opts.cancel||T('mCancel');can.classList.toggle('hidden',opts.cancel===false);ok.className=opts.danger?'danger':'';
  return new Promise(r=>{_mResolve=r;m.classList.remove('hidden');});}
+if(document.getElementById('modal')){
 document.getElementById('mok').onclick=()=>{let m=document.getElementById('modal'),inp=document.getElementById('minput');let v=inp.classList.contains('hidden')?true:inp.value;m.classList.add('hidden');_mResolve(v);};
 document.getElementById('mcan').onclick=()=>{let m=document.getElementById('modal');m.classList.add('hidden');_mResolve(null);};
 document.getElementById('modal').onclick=e=>{if(e.target.id==='modal'){document.getElementById('modal').classList.add('hidden');_mResolve(null);}};
+}
 async function askConfirm(text){let v=await modal({text:text,ok:T('mOk'),cancel:T('mCancel'),danger:true});return v===true;}
 async function askPrompt(text,def){let v=await modal({text:text,input:def||'',ok:T('mOk'),cancel:T('mCancel')});return v;}
 function T(k){return (STR[k]||{})[LANG]||k;}
+function setT(id,txt){try{let e=document.getElementById(id);if(e)e.textContent=txt;}catch(_){}}
+function setPH(id,txt){try{let e=document.getElementById(id);if(e)e.placeholder=txt;}catch(_){}}
 function setLang(l){LANG=l;localStorage.setItem('lang',l);
 document.documentElement.dir=(l==='ar'||l==='ku')?'rtl':'ltr';
 document.documentElement.lang=l==='ar'?'ar':(l==='ku'?'ckb':l);
 document.querySelectorAll('#langs button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
-document.querySelector('#lbox p').textContent=T('login_sub');
-document.getElementById('lu').placeholder=T('lu_ph');
-document.getElementById('lp').placeholder=T('lp_ph');
-document.getElementById('lgo').textContent=T('lgo');
-document.getElementById('title').textContent=T('title');
-document.getElementById('clr').title=T('clear');
+try{let _p=document.querySelector('#lbox p');if(_p)_p.textContent=T('login_sub');}catch(_){}
+setPH('lu',T('lu_ph'));
+setPH('lp',T('lp_ph'));
+setT('lgo',T('lgo'));
+setT('title',T('title'));
+try{let _c=document.getElementById('clr');if(_c)_c.title=T('clear');}catch(_){}
 document.getElementById('clr').onclick=async()=>{if(!await askConfirm(T('clrQ')))return;
  if(sid) await fetch('/api/clear',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid:sid})});
  out.innerHTML='';cur=null;off=0;toast(T('toastDel'));};
-document.getElementById('tabS').textContent=T('tabS');
-document.getElementById('tabF').textContent=T('tabF');
-document.getElementById('newS').textContent=T('newS');
-document.getElementById('newF').textContent=T('newF');
-document.getElementById('cmd').placeholder=T('cmd_ph');
-document.getElementById('esave').textContent=T('save');
-document.getElementById('erun').textContent=T('run');
-document.getElementById('panelT').textContent=T('panel');
-document.getElementById('ubtn').textContent=T('ubtn');
-document.getElementById('dropzone').textContent=T('drop');
-document.getElementById('eupload').textContent=T('eupload');
-if(sid)loadSessions();}
+setT('tabS',T('tabS'));
+setT('tabF',T('tabF'));
+setT('newS',T('newS'));
+setT('newF',T('newF'));
+setPH('cmd',T('cmd_ph'));
+setT('esave',T('save'));
+setT('erun',T('run'));
+setT('panelT',T('panel'));
+setT('ubtn',T('ubtn'));
+setT('dropzone',T('drop'));
+setT('eupload',T('eupload'));
+try{if(sid)loadSessions();}catch(_){}}
 document.querySelectorAll('#langs button').forEach(b=>{b.style.touchAction='manipulation'; b.onclick=()=>setLang(b.dataset.l);});
 let sid=null,off=0,gen=-1,out=document.getElementById('out'),cur=null,pollT=null;
 let cv=document.getElementById('matrix'),cx=cv.getContext('2d');
@@ -395,8 +406,9 @@ await fetch('/api/file?path='+encodeURIComponent(p),{method:'DELETE'});
 document.getElementById('editor').classList.add('hidden');toast(T('toastDel'));loadFiles();};
 document.getElementById('newF').onclick=()=>{document.getElementById('efile').value=fdir+'/';
 document.getElementById('eta').value='';document.getElementById('editor').classList.remove('hidden');};
+if(document.getElementById('upick')){
 const upick=document.getElementById('upick'),ubtn=document.getElementById('ubtn'),ustatus=document.getElementById('ustatus'),dropzone=document.getElementById('dropzone');
-ubtn.onclick=()=>upick.click();
+if(ubtn)ubtn.onclick=()=>upick.click();
 async function doUpload(files,dir){
  let d=dir||fdir; if(!files||!files.length)return;
  for(let f of files){ustatus.textContent=f.name.slice(0,18);
@@ -406,11 +418,15 @@ async function doUpload(files,dir){
   }catch(e){toast(T('failed'),true);}
  }ustatus.textContent='';if(dir)loadFiles(); else loadFiles();}
 upick.onchange=e=>{doUpload(e.target.files);e.target.value='';};
+if(dropzone){
 dropzone.ondragover=e=>{e.preventDefault();dropzone.style.opacity='1';dropzone.style.borderColor='var(--grn)';};
 dropzone.ondragleave=()=>{dropzone.style.opacity='.5';dropzone.style.borderColor='#00ff4155';};
 dropzone.ondrop=e=>{e.preventDefault();dropzone.style.opacity='.5';doUpload(e.dataTransfer.files);};
+}
+}
+if(document.getElementById('epick')){
 const epick=document.getElementById('epick'),eupload=document.getElementById('eupload'),estatus=document.getElementById('estatus');
-eupload.onclick=()=>epick.click();
+if(eupload)eupload.onclick=()=>epick.click();
 epick.onchange=async e=>{let fs=e.target.files; if(!fs.length)return;
  let dir=document.getElementById('efile').value; dir=dir?dir.substring(0,dir.lastIndexOf('/'))||'/data/work':fdir;
  for(let f of fs){estatus.textContent=f.name.slice(0,16);
@@ -419,7 +435,7 @@ epick.onchange=async e=>{let fs=e.target.files; if(!fs.length)return;
    else toast(T('failed'),true);
   }catch(e){toast(T('failed'),true);}
  }estatus.textContent=''; e.target.value=''; loadFiles();};
-const origLoadFiles=loadFiles;
+}
 async function runFile(path){if(!sid){toast(T('pickSess'),true);return;}
 await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({path:path,sid:sid})});setSide(false);}
