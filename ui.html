@@ -25,6 +25,11 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 #lbox .skull{font-size:46px;filter:drop-shadow(0 0 10px #ff0000);animation:skullFloat 2.8s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
 @keyframes skullFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes skullGlow{0%{filter:drop-shadow(0 0 8px #ff0000)}100%{filter:drop-shadow(0 0 18px #ff0000) drop-shadow(0 0 30px #ff5500)}}
+.lskull{width:72px;height:72px;border-radius:18px;border:1px solid #ff000088;animation:skullMove 4s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
+@keyframes skullMove{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(0)}88%{transform:translateY(0) rotate(0)}89%{transform:translate(-2px,1px) rotate(-10deg)}91%{transform:translate(2px,-1px) rotate(10deg)}93%{transform:translate(-1px,0) rotate(-5deg)}95%{transform:translateY(0) rotate(0)}}
+.hskull{width:32px;height:32px;border-radius:9px;border:1px solid #ff000088;flex:none;animation:skullMove 4s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
+.bskull{width:36px;height:36px;border-radius:10px;border:1px solid #ff000088;flex:none;align-self:center;animation:skullMove 4s .7s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
+#dev{font-size:11px;color:#7dff9b;letter-spacing:1px;text-shadow:0 0 8px var(--grn);white-space:nowrap;direction:ltr;unicode-bidi:embed;animation:titleFlicker 6s infinite}
 #lbox h1{color:var(--red);font-size:38px;letter-spacing:6px;margin:6px 0 2px;text-shadow:0 0 15px #ff0000;animation:titleFlicker 4.5s infinite}
 #lgo{animation:goPulse 2.4s ease-in-out infinite}
 #lbox p{color:var(--grn);font-size:14px;margin-bottom:20px;opacity:.8}
@@ -148,14 +153,14 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 <canvas id="matrix"></canvas><div id="grid"></div><div id="scan"></div><div id="vig"></div><div id="skulls" aria-hidden="true"></div>
 <div id="overlay" class="hidden"></div>
 <div id="login"><div id="lbox">
-<div class="skull">💀</div><h1>☠ ROOT ☠</h1><p>// الدخول إلى الطرفية //</p>
+<img class="lskull" src="/icon-192.png" alt="skull"><h1>☠ ROOT ☠</h1><p>// الدخول إلى الطرفية //</p>
 <input id="lu" placeholder="اسم المستخدم" autocomplete="off"><input id="lp" type="password" placeholder="كلمة المرور">
 <button id="lgo">⚡ دخول ⚡</button><div id="lerr"></div>
 </div></div>
 <div id="app" class="hidden">
-<div id="head"><button id="menu">☰</button><span id="root">☠ ROOT</span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span></div>
+<div id="head"><button id="menu">☰</button><img class="hskull" src="/icon-192.png" alt="skull"><span id="root">☠ ROOT</span><span id="dev">Dev.Yousf_Alkurdi</span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span></div>
 <div id="main">
-<div id="side"><h3>☠ لوحة التحكم <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
+<div id="side"><h3><span id="panelT">☠ لوحة التحكم</span> <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
 <div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
 <div id="langs"><button data-l="ar">عربي</button><button data-l="ku">کوردی</button><button data-l="en">EN</button><button data-l="ru">RU</button></div>
 <div id="slist"></div><button id="newS">＋ جلسة جديدة</button>
@@ -173,7 +178,7 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 <button id="ex">✖</button><input id="efile" placeholder="/data/work/file.py"><button id="esave">💾 حفظ</button><button id="erun">▶ تشغيل</button><button id="edel">🗑️</button>
 </div><div id="upbar"><input type="file" id="epick" multiple><button id="eupload" style="flex:1;padding:10px;background:#001a33;color:#7dc8ff;border:1px solid #1a8cff;border-radius:8px;font-size:13px;font-family:inherit">⬆ ئەپڵۆد بۆ ئێرە</button><span id="estatus" style="font-size:11px;color:var(--grn);opacity:.6;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></div><textarea id="eta" spellcheck="false"></textarea></div>
 <div id="body"><div id="out"></div><div id="end"></div>
-<div id="bar"><input id="cmd" placeholder="اكتب الأمر هنا..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="go">▶</button></div>
+<div id="bar"><img class="bskull" src="/icon-192.png" alt="skull"><input id="cmd" placeholder="اكتب الأمر هنا..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="go">▶</button></div>
 </div></div></div>
 <div id="modal" class="hidden"><div class="mbox"><p id="mtext"></p><input id="minput" class="hidden"><div class="mbtns"><button id="mok"></button><button id="mcan"></button></div></div></div>
 <div id="toast" class="hidden"></div>
@@ -211,7 +216,12 @@ fileName_q:{ar:'اكتب اسم الملف',ku:'ناوی فایل بنووسە',
  mCancel:{ar:'إلغاء',ku:'پاشگەز',en:'Cancel',ru:'Отмена'},
  delHint:{ar:'سيُحذف السجل نهائياً',ku:'تۆماری هەڵگیراو بەتەواوی دەسڕێتەوە',en:'All stored records will be deleted',ru:'Все записи будут удалены'},
  clrQ:{ar:'مسح الشاشة؟',ku:'شاشەکە پاک بکەمەوە؟',en:'Clear screen?',ru:'Очистить экран?'},
- toastDel:{ar:'✅ تم الحذف',ku:'✅ سڕایەوە',en:'✅ Deleted',ru:'✅ Удалено'}};
+ toastDel:{ar:'✅ تم الحذف',ku:'✅ سڕایەوە',en:'✅ Deleted',ru:'✅ Удалено'},
+ panel:{ar:'☠ لوحة التحكم',ku:'☠ پانێڵی کۆنتڕۆڵ',en:'☠ Control Panel',ru:'☠ Панель управления'},
+ ubtn:{ar:'⬆ رفع',ku:'⬆ ئەپڵۆد',en:'⬆ Upload',ru:'⬆ Загрузить'},
+ drop:{ar:'اسحب وأفلت للرفع',ku:'ڕایکێشە و دابنێ بۆ ئەپڵۆد',en:'Drag & drop to upload',ru:'Перетащите для загрузки'},
+ eupload:{ar:'⬆ رفع هنا',ku:'⬆ ئەپڵۆد بۆ ئێرە',en:'⬆ Upload here',ru:'⬆ Загрузить сюда'},
+ loading:{ar:'... جار التحميل ...',ku:'... چاوەڕوانبە ...',en:'... loading ...',ru:'... загрузка ...'}};
 let _mResolve=null;
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(t._to);t._to=setTimeout(()=>t.classList.add('hidden'),1700);}
 function modal(opts){let m=document.getElementById('modal'),tx=document.getElementById('mtext'),inp=document.getElementById('minput'),ok=document.getElementById('mok'),can=document.getElementById('mcan');
@@ -244,6 +254,10 @@ document.getElementById('newF').textContent=T('newF');
 document.getElementById('cmd').placeholder=T('cmd_ph');
 document.getElementById('esave').textContent=T('save');
 document.getElementById('erun').textContent=T('run');
+document.getElementById('panelT').textContent=T('panel');
+document.getElementById('ubtn').textContent=T('ubtn');
+document.getElementById('dropzone').textContent=T('drop');
+document.getElementById('eupload').textContent=T('eupload');
 if(sid)loadSessions();}
 document.querySelectorAll('#langs button').forEach(b=>{b.style.touchAction='manipulation'; b.onclick=()=>setLang(b.dataset.l);});
 let sid=null,off=0,gen=-1,out=document.getElementById('out'),cur=null,pollT=null;
@@ -363,17 +377,16 @@ let del=document.createElement('button');del.textContent='🗑️';
 d.appendChild(del);}
 fl.appendChild(d);});}
 async function openEditor(path){document.getElementById('efile').value=path;
-document.getElementById('eta').value='... جار التحميل ...';
+document.getElementById('eta').value=T('loading');
 document.getElementById('editor').classList.remove('hidden');
 let r=await fetch('/api/file?path='+encodeURIComponent(path));
 if(r.ok){let j=await r.json();document.getElementById('eta').value=j.content;}
 else document.getElementById('eta').value='';}
 async function saveEditor(silent){let p=document.getElementById('efile').value;
-if(!p){let fv=await askPrompt(T('fileName_q'),'');if(!fv)return null;p=fv;}
+if(!p){let fv=await askPrompt(T('fileName_q'),'');if(!fv)return null;p=fv;document.getElementById('efile').value=p;}
 let r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({path:p,content:document.getElementById('eta').value})});
-if(!silent){let m=r.ok?T('saved'):T('failed');if(r.ok)toast(m);else if(confirm(m)){} // minimal fall-back
- document.getElementById('efile').value=p;}loadFiles();return p;}
+if(!silent)toast(r.ok?T('saved'):T('failed'),!r.ok);loadFiles();return p;}
 document.getElementById('esave').onclick=()=>saveEditor(false);
 document.getElementById('ex').onclick=()=>document.getElementById('editor').classList.add('hidden');
 document.getElementById('edel').onclick=async()=>{let p=document.getElementById('efile').value;
@@ -407,7 +420,7 @@ epick.onchange=async e=>{let fs=e.target.files; if(!fs.length)return;
   }catch(e){toast(T('failed'),true);}
  }estatus.textContent=''; e.target.value=''; loadFiles();};
 const origLoadFiles=loadFiles;
-async function runFile(path){if(!sid)return alert(T('pickSess'));
+async function runFile(path){if(!sid){toast(T('pickSess'),true);return;}
 await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({path:path,sid:sid})});setSide(false);}
 document.getElementById('erun').onclick=async()=>{let p=await saveEditor(true);
