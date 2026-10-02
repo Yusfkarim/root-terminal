@@ -25,14 +25,25 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 #lbox .skull{font-size:46px;filter:drop-shadow(0 0 10px #ff0000);animation:skullFloat 2.8s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
 @keyframes skullFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes skullGlow{0%{filter:drop-shadow(0 0 8px #ff0000)}100%{filter:drop-shadow(0 0 18px #ff0000) drop-shadow(0 0 30px #ff5500)}}
-.lskull{width:72px;height:72px;border-radius:18px;border:1px solid #ff000088;animation:skullMove 4s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
 @keyframes skullMove{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(0)}88%{transform:translateY(0) rotate(0)}89%{transform:translate(-2px,1px) rotate(-10deg)}91%{transform:translate(2px,-1px) rotate(10deg)}93%{transform:translate(-1px,0) rotate(-5deg)}95%{transform:translateY(0) rotate(0)}}
-.hskull{width:32px;height:32px;border-radius:9px;border:1px solid #ff000088;flex:none;animation:skullMove 4s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
-.bskull{width:36px;height:36px;border-radius:10px;border:1px solid #ff000088;flex:none;align-self:center;animation:skullMove 4s .7s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
+.rskull{position:relative;display:inline-flex;flex:none;animation:skullMove 4s ease-in-out infinite}
+.rskull img{width:100%;height:100%;border:1px solid #ff000088;filter:hue-rotate(-135deg) saturate(1.6) drop-shadow(0 0 6px #ff0000)}
+.rskull::after{content:"✖";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:70%;color:#ff2222;font-weight:900;text-shadow:0 0 3px #000,0 0 9px #ff0000;pointer-events:none;animation:skullGlow 1.8s ease-in-out infinite alternate}
+.rskull.h72{width:72px;height:72px;font-size:72px;border-radius:18px}
+.rskull.h72 img{border-radius:18px}
+.rskull.h32{width:32px;height:32px;font-size:32px;border-radius:9px}
+.rskull.h32 img{border-radius:9px}
+.rskull.h36{width:36px;height:36px;font-size:36px;border-radius:10px;align-self:center;animation-delay:.7s}
+.rskull.h36 img{border-radius:10px}
+.rskull.h16{width:16px;height:16px;font-size:16px;border-radius:5px;animation-duration:3s}
+.rskull.h16 img{border-radius:5px}
+.rskull.h16::after{text-shadow:0 0 2px #000,0 0 5px #ff0000}
 #devbox{display:inline-flex;flex-direction:row;align-items:center;gap:7px;padding:3px 11px;border-radius:20px;border:1px solid transparent;background:linear-gradient(#0d0202,#050101) padding-box,linear-gradient(135deg,#ff0000,#00ff41,#ff0000,#00ff41) border-box;background-size:auto,250% 250%;animation:devBorder 3.5s linear infinite;box-shadow:0 0 14px #ff000088;flex:none;white-space:nowrap}
 @keyframes devBorder{from{background-position:0 0,0 0}to{background-position:0 0,250% 250%}}
 #dev{font-size:12.5px;font-weight:bold;color:#fff;letter-spacing:1.5px;text-shadow:0 0 8px #00ff41,0 0 18px #00ff41;white-space:nowrap;direction:ltr;unicode-bidi:embed;animation:titleFlicker 6s infinite}
-.dskull{width:16px;height:16px;border-radius:5px;flex:none;animation:skullMove 3s ease-in-out infinite}
+#leftfx{position:fixed;left:0;top:0;bottom:0;width:20px;z-index:2;pointer-events:none;background:url(/icon-192.png) repeat-y center top;background-size:20px 20px;opacity:.32;filter:drop-shadow(0 0 5px #ff0000);animation:leftSlide 9s linear infinite}
+@keyframes leftSlide{from{background-position-y:0}to{background-position-y:40px}}
+#ver{text-align:center;font-size:10px;color:var(--grn);opacity:.5;padding:6px;letter-spacing:2px;animation:titleFlicker 7s infinite}
 .hfill{flex:1 1 30px;min-width:20px;height:24px;background:url(/icon-192.png) repeat-x left center;background-size:24px 24px;opacity:.4;filter:drop-shadow(0 0 5px #ff0000);animation:hfillSlide 7s linear infinite}
 @keyframes hfillSlide{from{background-position-x:0}to{background-position-x:56px}}
 #lbox h1{color:var(--red);font-size:38px;letter-spacing:6px;margin:6px 0 2px;text-shadow:0 0 15px #ff0000;animation:titleFlicker 4.5s infinite}
@@ -155,15 +166,15 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 @media(prefers-reduced-motion:reduce){#skulls .sk{animation:none!important}#skulls .fall{display:none}}
 @media(max-width:700px){#side{position:fixed;top:0;bottom:0;right:0;z-index:15;height:100dvh}}
 </style></head><body>
-<canvas id="matrix"></canvas><div id="grid"></div><div id="scan"></div><div id="vig"></div><div id="skulls" aria-hidden="true"></div>
+<canvas id="matrix"></canvas><div id="grid"></div><div id="scan"></div><div id="vig"></div><div id="leftfx"></div><div id="skulls" aria-hidden="true"></div>
 <div id="overlay" class="hidden"></div>
 <div id="login"><div id="lbox">
-<img class="lskull" src="/icon-192.png" alt="skull"><h1>☠ ROOT ☠</h1><p>// الدخول إلى الطرفية //</p>
+<span class="rskull h72"><img src="/icon-192.png" alt="skull"></span><h1>☠ ROOT ☠</h1><p>// الدخول إلى الطرفية //</p>
 <input id="lu" placeholder="اسم المستخدم" autocomplete="off"><input id="lp" type="password" placeholder="كلمة المرور">
 <button id="lgo">⚡ دخول ⚡</button><div id="lerr"></div>
 </div></div>
 <div id="app" class="hidden">
-<div id="head"><button id="menu">☰</button><img class="hskull" src="/icon-192.png" alt="skull"><span id="root">☠ ROOT</span><span id="devbox"><img class="dskull" src="/icon-192.png" alt=""><span id="dev">Dev.Yousf_Alkurdi</span><img class="dskull" src="/icon-192.png" alt=""></span><span class="hfill"></span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span></div>
+<div id="head"><button id="menu">☰</button><span class="rskull h32"><img src="/icon-192.png" alt="skull"></span><span id="root">☠ ROOT</span><span id="devbox"><span class="rskull h16"><img src="/icon-192.png" alt=""></span><span id="dev">Dev.Yousf_Alkurdi</span><span class="rskull h16"><img src="/icon-192.png" alt=""></span></span><span class="hfill"></span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span><span class="hfill"></span></div>
 <div id="main">
 <div id="side"><h3><span id="panelT">☠ لوحة التحكم</span> <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
 <div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
@@ -178,12 +189,12 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 <span id="ustatus" style="font-size:11px;color:var(--grn);opacity:.7;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
 </div>
 <div id="dropzone" style="margin:0 8px 8px;border:1px dashed #00ff4155;border-radius:8px;padding:10px;text-align:center;font-size:11px;color:var(--grn);opacity:.5">ڕایکێشە و دابنێ بۆ ئەپڵۆد</div>
-</div></div>
+</div><div id="ver">ROOT v6 ☠</div></div>
 <div id="editor" class="hidden"><div id="ebar">
 <button id="ex">✖</button><input id="efile" placeholder="/data/work/file.py"><button id="esave">💾 حفظ</button><button id="erun">▶ تشغيل</button><button id="edel">🗑️</button>
 </div><div id="upbar"><input type="file" id="epick" multiple><button id="eupload" style="flex:1;padding:10px;background:#001a33;color:#7dc8ff;border:1px solid #1a8cff;border-radius:8px;font-size:13px;font-family:inherit">⬆ ئەپڵۆد بۆ ئێرە</button><span id="estatus" style="font-size:11px;color:var(--grn);opacity:.6;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span></div><textarea id="eta" spellcheck="false"></textarea></div>
 <div id="body"><div id="out"></div><div id="end"></div>
-<div id="bar"><img class="bskull" src="/icon-192.png" alt="skull"><input id="cmd" placeholder="اكتب الأمر هنا..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="go">▶</button></div>
+<div id="bar"><span class="rskull h36"><img src="/icon-192.png" alt="skull"></span><input id="cmd" placeholder="اكتب الأمر هنا..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="go">▶</button></div>
 </div></div></div>
 <div id="modal" class="hidden"><div class="mbox"><p id="mtext"></p><input id="minput" class="hidden"><div class="mbtns"><button id="mok"></button><button id="mcan"></button></div></div></div>
 <div id="toast" class="hidden"></div>
