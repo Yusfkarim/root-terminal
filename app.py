@@ -304,6 +304,13 @@ class H(BaseHTTPRequestHandler):
             }), "application/manifest+json")
         if u.path == "/sw.js":
             return self._send(
+                "const V='root-nuke-v2';"
+                "self.addEventListener('install',e=>{self.skipWaiting();});"
+                "self.addEventListener('activate',e=>{e.waitUntil((async()=>{"
+                "try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(_){}"
+                "try{await self.clients.claim();const cs=await self.clients.matchAll({type:'window',includeUncontrolled:true});"
+                "await Promise.all(cs.map(c=>{try{return c.navigate(c.url);}catch(_){}}));}catch(_){}"
+                "})());});"
                 "self.addEventListener('fetch',e=>{});",
                 "application/javascript")
         if u.path in ("/icon-192.png", "/icon-512.png"):
