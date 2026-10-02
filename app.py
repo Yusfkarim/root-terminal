@@ -31,6 +31,7 @@ body{background:#0d1117;color:#e6edf3;font-family:monospace;margin:0;padding:0}
 .cmd{padding:8px 12px;color:#3fb950;font-weight:bold;font-size:14px;border-bottom:1px solid #30363d;word-break:break-all}
 .cmd::before{content:"$ "}
 .res{padding:8px 12px;white-space:pre-wrap;word-break:break-word;font-size:13px;color:#e6edf3;min-height:8px}
+.cpy{display:block;width:100%;background:#21262d;color:#58a6ff;border:none;border-top:1px solid #30363d;padding:8px;font-size:13px;font-family:monospace}
 #bar{display:flex;gap:6px;position:fixed;bottom:0;left:0;right:0;background:#161b22;padding:10px;border-top:1px solid #30363d}
 #cmd{flex:1;font-size:16px;padding:12px;background:#0d1117;color:#3fb950;border:1px solid #3fb950;border-radius:10px;font-family:monospace}
 #go{font-size:18px;padding:10px 20px;background:#238636;color:#fff;border:none;border-radius:10px}
@@ -42,8 +43,11 @@ body{background:#0d1117;color:#e6edf3;font-family:monospace;margin:0;padding:0}
 let off=0;let q=location.search;let out=document.getElementById('out');let cur=null;
 function scrollDown(){document.getElementById('end').scrollIntoView(false);}
 function newBlock(c){let d=document.createElement('div');d.className='blk';
-d.innerHTML='<div class="cmd"></div><div class="res"></div>';
-d.querySelector('.cmd').textContent=c;out.appendChild(d);cur=d.querySelector('.res');scrollDown();}
+d.innerHTML='<div class="cmd"></div><div class="res"></div><button class="cpy">📋 کۆپی خروجی</button>';
+d.querySelector('.cmd').textContent=c;out.appendChild(d);cur=d.querySelector('.res');
+let myres=cur;
+d.querySelector('.cpy').onclick=(e)=>{navigator.clipboard.writeText(myres.textContent).then(()=>{e.target.textContent='✅ کۆپی کرا';setTimeout(()=>e.target.textContent='📋 کۆپی خروجی',1500);});};
+scrollDown();}
 async function poll(){try{
 let r=await fetch('/read'+q+(q?'&':'?')+'off='+off);let j=await r.json();
 if(j.data){if(!cur)newBlock('(خروجی)');cur.textContent+=j.data;scrollDown();}
