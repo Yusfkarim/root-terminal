@@ -395,6 +395,44 @@ class H(BaseHTTPRequestHandler):
                 except OSError:
                     pass
             return self._send('{"ok":1}', "application/json")
+        if u.path == "/api/clear":
+            try:
+                body = json.loads(self._body() or b"{}")
+            except Exception:
+                body = {}
+            sid = body.get("sid", "")
+            with lock:
+                s = sessions.get(sid)
+                if s:
+                    s["buf"] = bytearray()
+                    s["gen"] = s.get("gen", 0) + 1
+            try:
+                if sid and os.path.isdir("/data"):
+                    open(buf_path(sid), "wb").close()
+            except OSError:
+                pass
+            return self._send('{"ok":1}', "application/json")
+        if u.path == "/api/upload":
+            qs = parse_qs(u.query)
+            d = qs.get("dir", ["/data/work"])[0]
+            fname = (self.headers.get("X-Filename") or qs.get("name", [""])[0] or "").strip()
+            fname = os.path.basename(fname)
+            if not fname:
+                return self._send(json.dumps({"error": "no filename"}), "application/json")
+            data = self._body()
+            if len(data) > 50 * 1024 * 1024:
+                return self._send(json.dumps({"error": "too large"}), "application/json")
+            target = os.path.join(d, fname)
+            p = resolve_path(target)
+            if not p:
+                return self._send(json.dumps({"error": "bad path"}), "application/json")
+            try:
+                os.makedirs(os.path.dirname(p) or "/", exist_ok=True)
+                with open(p, "wb") as f:
+                    f.write(data)
+                return self._send(json.dumps({"ok": 1, "path": p, "size": len(data)}), "application/json")
+            except OSError as e:
+                return self._send(json.dumps({"error": str(e)}), "application/json")
         if u.path == "/write":
             qs = parse_qs(u.query)
             sid = qs.get("sid", [""])[0]
