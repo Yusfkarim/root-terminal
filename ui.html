@@ -121,11 +121,16 @@ if(codes.includes('1')){r+='<span style="font-weight:bold">';open=1;}
 return r;});
 out=t;if(open)out+='</span>';
 return out.replace(/\x1b\[[0-9;?]*[a-zA-Z]/g,'');}
-function appendOut(txt){if(!cur)newBlock('···');cur.innerHTML+=ansiToHtml(txt);cur.scrollTop=cur.scrollHeight;}
+function appendOut(txt){if(!cur)newBlock('···');
+let nearBottom=(cur.scrollHeight-cur.scrollTop-cur.clientHeight)<80;
+cur.innerHTML+=ansiToHtml(txt);
+if(nearBottom)cur.scrollTop=cur.scrollHeight;}
 function scrollTop(){window.scrollTo(0,0);}
 function newBlock(c){let d=document.createElement('div');d.className='blk';
-d.innerHTML='<div class="chead"><span class="prompt">➤</span><span class="cmd"></span><button class="stp">⏹</button></div><div class="res"></div><button class="cpy">📋 نسخ المخرجات</button>';
+d.innerHTML='<div class="chead"><span class="prompt">➤</span><span class="cmd"></span><button class="stp">⏹</button><button class="stp updn">⬆</button></div><div class="res"></div><button class="cpy">📋 نسخ المخرجات</button>';
 d.querySelector('.cmd').textContent=c;out.prepend(d);cur=d.querySelector('.res');
+d.querySelector('.updn').onclick=()=>{let r=d.querySelector('.res');
+if(r.scrollTop<40)r.scrollTop=r.scrollHeight;else r.scrollTop=0;};
 d.querySelector('.stp').onclick=async()=>{if(!confirm('هل تريد إيقاف هذا الأمر؟'))return;
 await fetch('/api/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid:sid})});};
 let my=cur;d.querySelector('.cpy').onclick=e=>{navigator.clipboard.writeText(my.textContent).then(()=>{e.target.textContent='✅ تم النسخ';setTimeout(()=>e.target.textContent='📋 نسخ المخرجات',1500);});};
