@@ -139,10 +139,15 @@ async function poll(){clearTimeout(pollT);try{
 let r=await fetch('/read?sid='+sid+'&off='+off);
 if(!r.ok)return retry();let j=await r.json();
 if(j.error)return loadSessions();
-if(gen!==-1&&(j.gen!==gen||j.off<off)){newBlock('🖥 شاشة جديدة');off=0;gen=j.gen;}
-else gen=j.gen;
-if(j.data){appendOut(j.data);}
-off=j.off;}catch(e){}pollT=setTimeout(poll,800);}
+if(gen!==-1&&j.gen!==gen){
+  // شاشة جديدة: أعد القراءة من الصفر لجلب اللوگو كاملاً
+  newBlock('🖥 شاشة جديدة');gen=j.gen;off=0;
+  let r2=await fetch('/read?sid='+sid+'&off=0');
+  if(r2.ok){let k=await r2.json();gen=k.gen;if(k.data)appendOut(k.data);off=k.off;}
+}else{gen=j.gen;
+  if(j.off<off){newBlock('🖥 شاشة جديدة');off=0;}
+  else{if(j.data)appendOut(j.data);off=j.off;}}
+}catch(e){}pollT=setTimeout(poll,800);}
 function retry(){pollT=setTimeout(poll,2500);}
 async function loadSessions(){let r=await fetch('/api/sessions');
 if(!r.ok)return showLogin();
