@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 ANSI = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[()][0-9A-B]|\r")
 
 PORT = int(os.environ.get("PORT", "7682"))
+BASE = os.path.dirname(os.path.abspath(__file__))
 LOGIN_USER = os.environ.get("TERM_USER", "yusf")
 LOGIN_PASS = os.environ.get("TERM_PASS", "12345678rk")
 SESSION = secrets.token_hex(16)
@@ -154,6 +155,34 @@ class H(BaseHTTPRequestHandler):
         u = urlparse(self.path)
         if u.path == "/":
             return self._send(PAGE)
+        if u.path == "/manifest.json":
+            return self._send(json.dumps({
+                "name": "ROOT Terminal", "short_name": "ROOT",
+                "description": "طرفية السيرفر",
+                "start_url": "/", "display": "standalone",
+                "dir": "rtl", "lang": "ar",
+                "background_color": "#000000", "theme_color": "#000000",
+                "icons": [
+                    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png"},
+                    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"}]
+            }), "application/manifest+json")
+        if u.path == "/sw.js":
+            return self._send(
+                "self.addEventListener('fetch',e=>{});",
+                "application/javascript")
+        if u.path in ("/icon-192.png", "/icon-512.png"):
+            try:
+                with open(os.path.join(BASE, u.path[1:]), "rb") as f:
+                    data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            except OSError:
+                self.send_error(404)
+                return
         if not authorized(self.headers):
             return self._deny()
         if u.path == "/api/sessions":
