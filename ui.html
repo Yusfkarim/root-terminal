@@ -12,9 +12,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--grn:#00ff41;--red:#ff1a1a;--bg:#010401}
 body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;overflow-x:hidden}
-#matrix{position:fixed;inset:0;z-index:0;opacity:.22}
+#matrix{position:fixed;inset:0;z-index:0;opacity:.38}
 #scan{position:fixed;inset:0;z-index:2;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
-#vig{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(255,0,0,.10) 100%)}
+#vig{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,rgba(255,0,0,.14) 100%)}
+#sweep{position:fixed;left:0;right:0;height:90px;z-index:2;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(0,255,65,.07),rgba(255,0,0,.05),transparent);animation:sweep 8s linear infinite}
+@keyframes sweep{0%{top:-100px}100%{top:100%}}
 #overlay{position:fixed;inset:0;z-index:14;background:rgba(0,0,0,.6)}
 #login{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:20px}
 #lbox{width:100%;max-width:360px;background:#000;border:1px solid var(--grn);border-radius:16px;padding:30px 24px;text-align:center;box-shadow:0 0 40px #00ff4155,inset 0 0 30px #00ff4111}
@@ -59,12 +61,12 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 #eta{flex:1;background:#000;color:#d9ffd9;border:1px solid var(--grn);border-radius:10px;font-size:14px;font-family:monospace;padding:12px;line-height:1.8}
 #body{flex:1;display:flex;flex-direction:column;min-width:0}
 #out{flex:1;overflow-y:auto;padding:10px}
-.blk{background:linear-gradient(180deg,rgba(12,0,0,.80),rgba(0,14,0,.80));border:1px solid #00ff4166;border-right:3px solid var(--red);border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 0 14px #00ff4422,0 0 26px #ff000022}
+.blk{background:linear-gradient(180deg,rgba(12,0,0,.62),rgba(0,14,0,.62));border:1px solid #00ff4166;border-right:3px solid var(--red);border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 0 14px #00ff4422,0 0 26px #ff000022}
 .blk .chead{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px dashed #00ff4155;background:rgba(255,0,0,.07)}
 .blk .prompt{color:var(--red);font-weight:bold;text-shadow:0 0 8px #ff0000;font-size:16px}
 .blk .cmd{flex:1;color:#7dff9b;font-weight:bold;font-size:14px;word-break:break-all;text-shadow:0 0 6px var(--grn)}
 .blk .stp{background:#2a0000;color:#ff6666;border:1px solid #ff0000;border-radius:8px;font-size:14px;padding:3px 10px}
-.blk .res{padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:14.5px;color:#d9ffd9;min-height:10px;max-height:68dvh;overflow-y:auto;line-height:2;border-right:2px solid #00ff4133;background:rgba(0,8,0,.5)}
+.blk .res{padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:14.5px;color:#d9ffd9;min-height:10px;max-height:68dvh;overflow-y:auto;line-height:2;border-right:2px solid #00ff4133;background:rgba(0,8,0,.30)}
 .blk .res:empty{display:none}
 .cpy{display:block;width:100%;background:#001a00;color:#7dff9b;border:none;border-top:1px solid #00ff4133;padding:9px;font-size:13px;font-family:inherit}
 #end{height:4px}
@@ -75,7 +77,7 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 .hidden{display:none!important}
 @media(max-width:700px){#side{position:fixed;top:0;bottom:0;right:0;z-index:15;height:100dvh}}
 </style></head><body>
-<canvas id="matrix"></canvas><div id="scan"></div><div id="vig"></div>
+<canvas id="matrix"></canvas><div id="scan"></div><div id="vig"></div><div id="sweep"></div>
 <div id="overlay" class="hidden"></div>
 <div id="login"><div id="lbox">
 <div class="skull">💀</div><h1>☠ ROOT ☠</h1><p>// الدخول إلى الطرفية //</p>
@@ -105,8 +107,9 @@ function msize(){cv.width=innerWidth;cv.height=innerHeight;}
 msize();addEventListener('resize',msize);
 let cols=Math.floor(innerWidth/16),drops=Array(cols).fill(0);
 setInterval(()=>{cx.fillStyle='rgba(0,0,0,.09)';cx.fillRect(0,0,cv.width,cv.height);
-cx.fillStyle='#00ff41';cx.font='14px monospace';
-for(let i=0;i<drops.length;i++){cx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*16,drops[i]*16);
+cx.font='14px monospace';
+for(let i=0;i<drops.length;i++){cx.fillStyle=Math.random()>.9?'#ff2222':'#00ff41';
+cx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*16,drops[i]*16);
 if(drops[i]*16>cv.height&&Math.random()>.975)drops[i]=0;drops[i]++;}},55);
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 const FG={30:'#555',31:'#ff5555',32:'#55ff55',33:'#ffff55',34:'#5555ff',35:'#ff55ff',36:'#55ffff',37:'#e6e6e6',90:'#888',91:'#ff8888',92:'#88ff88',93:'#ffff88',94:'#8888ff',95:'#ff88ff',96:'#88ffff',97:'#ffffff'};
