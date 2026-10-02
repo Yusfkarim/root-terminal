@@ -4,7 +4,21 @@ import json, os, pty, re, secrets, select, shlex, signal, subprocess, threading,
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
-ANSI = re.compile(r"\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[()][0-9A-B]|\r")
+def clean_chunk(raw):
+    """Keep ANSI colors, collapse \\r progress lines and \\b backspaces."""
+    text = raw.decode("utf-8", "replace")
+    out_lines = []
+    for line in text.split("\n"):
+        if "\r" in line:
+            line = line.rsplit("\r", 1)[-1]
+        while "\x08" in line:
+            line = re.sub(r"[^\x08]\x08", "", line, count=1)
+            line = line.replace("\x08", "")
+        out_lines.append(line)
+    return "\n".join(out_lines)
+
+
+ANSI_STRIP = re.compile(r"\x1b\][^\x07]*\x07|\x1b[()][0-9A-B]|\x1b\[(?![0-9;]*m)[0-9;?]*[a-zA-Z]")
 
 PORT = int(os.environ.get("PORT", "7682"))
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -143,7 +157,7 @@ def drain(s):
                 chunk = os.read(fd, 65536)
                 if not chunk:
                     break
-                clean = ANSI.sub("", chunk.decode("utf-8", "replace")).replace("\x08", "")
+                clean = ANSI_STRIP.sub("", clean_chunk(chunk))
                 with lock:
                     s["buf"] += clean.encode()
                     del s["buf"][:-MAXBUF]

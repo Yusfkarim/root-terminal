@@ -108,7 +108,20 @@ setInterval(()=>{cx.fillStyle='rgba(0,0,0,.09)';cx.fillRect(0,0,cv.width,cv.heig
 cx.fillStyle='#00ff41';cx.font='14px monospace';
 for(let i=0;i<drops.length;i++){cx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*16,drops[i]*16);
 if(drops[i]*16>cv.height&&Math.random()>.975)drops[i]=0;drops[i]++;}},55);
-function scrollDown(){}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+const FG={30:'#555',31:'#ff5555',32:'#55ff55',33:'#ffff55',34:'#5555ff',35:'#ff55ff',36:'#55ffff',37:'#e6e6e6',90:'#888',91:'#ff8888',92:'#88ff88',93:'#ffff88',94:'#8888ff',95:'#ff88ff',96:'#88ffff',97:'#ffffff'};
+function ansiToHtml(t){let out='',open=0;
+t=esc(t).replace(/\x1b\[([0-9;]*)m/g,(m,c)=>{let r='';
+if(open){r+='</span>';open=0;}
+let codes=(c||'0').split(';');
+if(codes.includes('0')||c===''){return r;}
+let col=codes.find(x=>FG[x]);
+if(col){r+='<span style="color:'+FG[col]+'">';open=1;}
+if(codes.includes('1')){r+='<span style="font-weight:bold">';open=1;}
+return r;});
+out=t;if(open)out+='</span>';
+return out.replace(/\x1b\[[0-9;?]*[a-zA-Z]/g,'');}
+function appendOut(txt){if(!cur)newBlock('···');cur.innerHTML+=ansiToHtml(txt);cur.scrollTop=cur.scrollHeight;}
 function scrollTop(){window.scrollTo(0,0);}
 function newBlock(c){let d=document.createElement('div');d.className='blk';
 d.innerHTML='<div class="chead"><span class="prompt">➤</span><span class="cmd"></span><button class="stp">⏹</button></div><div class="res"></div><button class="cpy">📋 نسخ المخرجات</button>';
@@ -121,7 +134,7 @@ async function poll(){clearTimeout(pollT);try{
 let r=await fetch('/read?sid='+sid+'&off='+off);
 if(!r.ok)return retry();let j=await r.json();
 if(j.error)return loadSessions();
-if(j.data){if(!cur)newBlock('···');cur.textContent+=j.data;cur.scrollTop=cur.scrollHeight;}
+if(j.data){appendOut(j.data);}
 off=j.off;}catch(e){}pollT=setTimeout(poll,800);}
 function retry(){pollT=setTimeout(poll,2500);}
 async function loadSessions(){let r=await fetch('/api/sessions');
