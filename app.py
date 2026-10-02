@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 def clean_chunk(raw):
     """Keep ANSI colors, collapse \\r progress lines and \\b backspaces."""
     text = raw.decode("utf-8", "replace")
+    text = re.sub(r"\n{3,}", "\n\n", text)
     out_lines = []
     for line in text.split("\n"):
         if "\r" in line:
