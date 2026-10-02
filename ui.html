@@ -29,11 +29,11 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 @keyframes skullMove{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(0)}88%{transform:translateY(0) rotate(0)}89%{transform:translate(-2px,1px) rotate(-10deg)}91%{transform:translate(2px,-1px) rotate(10deg)}93%{transform:translate(-1px,0) rotate(-5deg)}95%{transform:translateY(0) rotate(0)}}
 .hskull{width:32px;height:32px;border-radius:9px;border:1px solid #ff000088;flex:none;animation:skullMove 4s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
 .bskull{width:36px;height:36px;border-radius:10px;border:1px solid #ff000088;flex:none;align-self:center;animation:skullMove 4s .7s ease-in-out infinite,skullGlow 1.8s ease-in-out infinite alternate}
-#devbox{display:inline-flex;flex-direction:column;align-items:center;gap:0;padding:3px 14px 4px;border-radius:12px;border:1px solid transparent;background:linear-gradient(#0d0202,#050101) padding-box,linear-gradient(135deg,#ff0000,#00ff41,#ff0000,#00ff41) border-box;background-size:auto,250% 250%;animation:devBorder 3.5s linear infinite;box-shadow:0 0 14px #ff000088;flex:none}
+#devbox{display:inline-flex;flex-direction:row;align-items:center;gap:7px;padding:3px 11px;border-radius:20px;border:1px solid transparent;background:linear-gradient(#0d0202,#050101) padding-box,linear-gradient(135deg,#ff0000,#00ff41,#ff0000,#00ff41) border-box;background-size:auto,250% 250%;animation:devBorder 3.5s linear infinite;box-shadow:0 0 14px #ff000088;flex:none;white-space:nowrap}
 @keyframes devBorder{from{background-position:0 0,0 0}to{background-position:0 0,250% 250%}}
-#dev{font-size:14px;font-weight:bold;color:#fff;letter-spacing:2px;text-shadow:0 0 8px #00ff41,0 0 18px #00ff41;white-space:nowrap;direction:ltr;unicode-bidi:embed;animation:titleFlicker 6s infinite}
-.dskull{width:17px;height:17px;border-radius:5px;animation:skullMove 3s ease-in-out infinite}
-.hfill{flex:1 1 30px;min-width:20px;height:28px;background:url(/icon-192.png) repeat-x left center;background-size:28px 28px;opacity:.45;filter:drop-shadow(0 0 5px #ff0000);animation:hfillSlide 7s linear infinite}
+#dev{font-size:12.5px;font-weight:bold;color:#fff;letter-spacing:1.5px;text-shadow:0 0 8px #00ff41,0 0 18px #00ff41;white-space:nowrap;direction:ltr;unicode-bidi:embed;animation:titleFlicker 6s infinite}
+.dskull{width:16px;height:16px;border-radius:5px;flex:none;animation:skullMove 3s ease-in-out infinite}
+.hfill{flex:1 1 30px;min-width:20px;height:24px;background:url(/icon-192.png) repeat-x left center;background-size:24px 24px;opacity:.4;filter:drop-shadow(0 0 5px #ff0000);animation:hfillSlide 7s linear infinite}
 @keyframes hfillSlide{from{background-position-x:0}to{background-position-x:56px}}
 #lbox h1{color:var(--red);font-size:38px;letter-spacing:6px;margin:6px 0 2px;text-shadow:0 0 15px #ff0000;animation:titleFlicker 4.5s infinite}
 #lgo{animation:goPulse 2.4s ease-in-out infinite}
@@ -43,7 +43,7 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 #lgo{width:100%;padding:13px;background:linear-gradient(180deg,#003b00,#001a00);color:var(--grn);border:1px solid var(--grn);border-radius:10px;font-size:18px;font-family:inherit;font-weight:bold}
 #lerr{color:#ff5555;min-height:22px;font-size:13px;margin-top:8px}
 #app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh}
-#head{display:flex;align-items:center;gap:8px;padding:10px 12px;background:linear-gradient(180deg,rgba(0,28,2,.96),rgba(0,14,0,.94));border-bottom:1px solid var(--grn);box-shadow:0 0 22px #00ff4444,0 0 0 1px #00ff4111;flex-wrap:wrap;position:relative;overflow:hidden}
+#head{display:flex;align-items:center;gap:7px;padding:7px 10px;background:linear-gradient(180deg,rgba(0,28,2,.96),rgba(0,14,0,.94));border-bottom:1px solid var(--grn);box-shadow:0 0 22px #00ff4444,0 0 0 1px #00ff4111;flex-wrap:wrap;position:relative;overflow:hidden}
 #head::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(0,255,65,.06) 50%,transparent 100%);transform:translateX(-100%);animation:headSweep 4.5s 1s infinite;pointer-events:none}
 @keyframes headSweep{0%{transform:translateX(-100%)}35%,100%{transform:translateX(100%)}}
 #menu{font-size:17px;background:none;border:1px solid var(--grn);color:var(--grn);border-radius:7px;padding:2px 9px}
