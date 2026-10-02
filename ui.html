@@ -49,6 +49,9 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 #tabs{display:flex;border-bottom:1px dashed #00ff4155}
 #tabs button{flex:1;background:none;border:none;color:var(--grn);padding:11px;font-size:14px;font-family:inherit;opacity:.55}
 #tabs button.on{opacity:1;background:rgba(0,255,65,.08);box-shadow:inset 0 -2px 0 var(--grn)}
+#langs{display:flex;gap:4px;padding:6px 8px;border-bottom:1px dashed #00ff4155}
+#langs button{flex:1;background:#001a00;color:var(--grn);border:1px solid #00ff4155;border-radius:6px;padding:6px 2px;font-size:12px;font-family:inherit;opacity:.6}
+#langs button.on{opacity:1;border-color:var(--grn);box-shadow:0 0 8px #00ff4466}
 #flist{flex:1;overflow-y:auto;padding:8px}
 .fitem{display:flex;align-items:center;gap:6px;padding:10px;border:1px solid #00ff4133;border-radius:10px;margin-bottom:8px;background:#000;font-size:13px}
 .fitem .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ffd97d}
@@ -88,10 +91,11 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 <button id="lgo">⚡ دخول ⚡</button><div id="lerr"></div>
 </div></div>
 <div id="app" class="hidden">
-<div id="head"><button id="menu">☰</button><span id="root">☠ ROOT</span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span><button id="clr">🧹</button><button id="lang">کوردی</button></div>
+<div id="head"><button id="menu">☰</button><span id="root">☠ ROOT</span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span><button id="clr">🧹</button></div>
 <div id="main">
 <div id="side"><h3>☠ لوحة التحكم <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
 <div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
+<div id="langs"><button data-l="ar">عربي</button><button data-l="ku">کوردی</button><button data-l="en">EN</button><button data-l="ru">RU</button></div>
 <div id="slist"></div><button id="newS">＋ جلسة جديدة</button>
 <div id="fwrap" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
 <div id="fcwd"></div><div id="flist"></div>
@@ -106,37 +110,37 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 <script>
 let LANG=localStorage.getItem('lang')||'ar';
 const STR={
-login_sub:{ar:'// الدخول إلى الطرفية //',ku:'// چوونەژوورەوە بۆ تێرمیناڵ //'},
-lu_ph:{ar:'اسم المستخدم',ku:'ناوی بەکارهێنەر'},
-lp_ph:{ar:'كلمة المرور',ku:'پاسۆرد'},
-lgo:{ar:'⚡ دخول ⚡',ku:'⚡ چوونەژوورەوە ⚡'},
-wrong:{ar:'❌ بيانات خاطئة',ku:'❌ زانیاری هەڵەیە'},
-title:{ar:'طرفية السيرفر',ku:'تێرمیناڵی سێرڤەر'},
-clear:{ar:'مسح',ku:'سڕینەوە'},
-tabS:{ar:'الجلسات',ku:'جلسەکان'},
-tabF:{ar:'📁 الملفات',ku:'📁 فایلەکان'},
-newS:{ar:'＋ جلسة جديدة',ku:'＋ جلسەی نوێ'},
-newF:{ar:'＋ ملف جديد',ku:'＋ فایلی نوێ'},
-cmd_ph:{ar:'اكتب الأمر هنا...',ku:'فەرمان بنووسە...'},
-cpy:{ar:'📋 نسخ المخرجات',ku:'📋 کۆپی خروجی'},
-copied:{ar:'✅ تم النسخ',ku:'✅ کۆپی کرا'},
-screen:{ar:'🖥 شاشة جديدة',ku:'🖥 شاشەی نوێ'},
-stop_q:{ar:'هل تريد إيقاف هذا الأمر؟',ku:'دەتەوێت ئەم فەرمانە بوەستێنیت؟'},
-delS_q:{ar:'حذف الجلسة؟',ku:'جلسەکە بسڕمەوە؟'},
-sess_name:{ar:'اسم الجلسة:',ku:'ناوی جلسە:'},
-newSess_name:{ar:'اسم الجلسة الجديدة:',ku:'ناوی جلسە نوێکە:'},
-defSess:{ar:'جلسة',ku:'جلسە'},
-delF_q:{ar:'حذف الملف؟',ku:'فایلەکە بسڕمەوە؟'},
-saved:{ar:'✅ تم الحفظ',ku:'✅ پاشەکەوت کرا'},
-failed:{ar:'❌ فشل',ku:'❌ شکستی هێنا'},
-pickSess:{ar:'اختر جلسة أولاً',ku:'سەرەتا جلسەیەک هەڵبژێرە'},
-fileName_q:{ar:'اكتب اسم الملف',ku:'ناوی فایل بنووسە'},
-save:{ar:'💾 حفظ',ku:'💾 پاشەکەوت'},
-run:{ar:'▶ تشغيل',ku:'▶ ڕەن'}};
+login_sub:{ar:'// الدخول إلى الطرفية //',ku:'// چوونەژوورەوە بۆ تێرمیناڵ //',en:'// Access the terminal //',ru:'// Вход в терминал //'},
+lu_ph:{ar:'اسم المستخدم',ku:'ناوی بەکارهێنەر',en:'Username',ru:'Имя пользователя'},
+lp_ph:{ar:'كلمة المرور',ku:'پاسۆرد',en:'Password',ru:'Пароль'},
+lgo:{ar:'⚡ دخول ⚡',ku:'⚡ چوونەژوورەوە ⚡',en:'⚡ Login ⚡',ru:'⚡ Войти ⚡'},
+wrong:{ar:'❌ بيانات خاطئة',ku:'❌ زانیاری هەڵەیە',en:'❌ Wrong credentials',ru:'❌ Неверные данные'},
+title:{ar:'طرفية السيرفر',ku:'تێرمیناڵی سێرڤەر',en:'Server Terminal',ru:'Терминал сервера'},
+clear:{ar:'مسح',ku:'سڕینەوە',en:'Clear',ru:'Очистить'},
+tabS:{ar:'الجلسات',ku:'جلسەکان',en:'Sessions',ru:'Сессии'},
+tabF:{ar:'📁 الملفات',ku:'📁 فایلەکان',en:'📁 Files',ru:'📁 Файлы'},
+newS:{ar:'＋ جلسة جديدة',ku:'＋ جلسەی نوێ',en:'＋ New session',ru:'＋ Новый сеанс'},
+newF:{ar:'＋ ملف جديد',ku:'＋ فایلی نوێ',en:'＋ New file',ru:'＋ Новый файл'},
+cmd_ph:{ar:'اكتب الأمر هنا...',ku:'فەرمان بنووسە...',en:'Type command here...',ru:'Введите команду...'},
+cpy:{ar:'📋 نسخ المخرجات',ku:'📋 کۆپی خروجی',en:'📋 Copy output',ru:'📋 Копировать вывод'},
+copied:{ar:'✅ تم النسخ',ku:'✅ کۆپی کرا',en:'✅ Copied',ru:'✅ Скопировано'},
+screen:{ar:'🖥 شاشة جديدة',ku:'🖥 شاشەی نوێ',en:'🖥 New screen',ru:'🖥 Новый экран'},
+stop_q:{ar:'هل تريد إيقاف هذا الأمر؟',ku:'دەتەوێت ئەم فەرمانە بوەستێنیت؟',en:'Stop this command?',ru:'Остановить команду?'},
+delS_q:{ar:'حذف الجلسة؟',ku:'جلسەکە بسڕمەوە؟',en:'Delete session?',ru:'Удалить сеанс?'},
+sess_name:{ar:'اسم الجلسة:',ku:'ناوی جلسە:',en:'Session name:',ru:'Имя сеанса:'},
+newSess_name:{ar:'اسم الجلسة الجديدة:',ku:'ناوی جلسە نوێکە:',en:'New session name:',ru:'Имя нового сеанса:'},
+defSess:{ar:'جلسة',ku:'جلسە',en:'session',ru:'сеанс'},
+delF_q:{ar:'حذف الملف؟',ku:'فایلەکە بسڕمەوە؟',en:'Delete file?',ru:'Удалить файл?'},
+saved:{ar:'✅ تم الحفظ',ku:'✅ پاشەکەوت کرا',en:'✅ Saved',ru:'✅ Сохранено'},
+failed:{ar:'❌ فشل',ku:'❌ شکستی هێنا',en:'❌ Failed',ru:'❌ Ошибка'},
+pickSess:{ar:'اختر جلسة أولاً',ku:'سەرەتا جلسەیەک هەڵبژێرە',en:'Select a session first',ru:'Сначала выберите сеанс'},
+fileName_q:{ar:'اكتب اسم الملف',ku:'ناوی فایل بنووسە',en:'Type file name',ru:'Введите имя файла'},
+save:{ar:'💾 حفظ',ku:'💾 پاشەکەوت',en:'💾 Save',ru:'💾 Сохранить'},
+run:{ar:'▶ تشغيل',ku:'▶ ڕەن',en:'▶ Run',ru:'▶ Запустить'}};
 function T(k){return (STR[k]||{})[LANG]||k;}
 function setLang(l){LANG=l;localStorage.setItem('lang',l);
-document.documentElement.lang=l==='ar'?'ar':'ckb';
-document.getElementById('lang').textContent=l==='ar'?'کوردی':'عربي';
+document.documentElement.lang=l==='ar'?'ar':(l==='ku'?'ckb':l);
+document.querySelectorAll('#langs button').forEach(b=>b.classList.toggle('on',b.dataset.l===l));
 document.querySelector('#lbox p').textContent=T('login_sub');
 document.getElementById('lu').placeholder=T('lu_ph');
 document.getElementById('lp').placeholder=T('lp_ph');
@@ -152,7 +156,7 @@ document.getElementById('cmd').placeholder=T('cmd_ph');
 document.getElementById('esave').textContent=T('save');
 document.getElementById('erun').textContent=T('run');
 if(sid)loadSessions();}
-document.getElementById('lang').onclick=()=>setLang(LANG==='ar'?'ku':'ar');
+document.querySelectorAll('#langs button').forEach(b=>b.onclick=()=>setLang(b.dataset.l));
 let sid=null,off=0,gen=-1,out=document.getElementById('out'),cur=null,pollT=null;
 let cv=document.getElementById('matrix'),cx=cv.getContext('2d');
 function msize(){cv.width=innerWidth;cv.height=innerHeight;}
