@@ -34,6 +34,8 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 @keyframes glitch{0%,93%,100%{transform:none}94%{transform:translate(-2px,1px) skewX(8deg)}96%{transform:translate(2px,-1px) skewX(-8deg)}98%{transform:none}}
 #sname{font-size:14px;color:var(--grn);text-shadow:0 0 6px var(--grn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #live{font-size:12px;color:#7dff9b;border:1px solid #00ff41;border-radius:20px;padding:3px 10px;text-shadow:0 0 6px var(--grn);box-shadow:0 0 8px #00ff4455;animation:blink 2s infinite}
+#clr{background:#001a00;color:var(--grn);border:1px solid var(--grn);border-radius:8px;padding:5px 9px;font-size:13px}
+#lang{background:#2a0000;color:#ffb3b3;border:1px solid var(--red);border-radius:8px;padding:5px 10px;font-size:12px;font-family:inherit}
 #main{flex:1;display:flex;overflow:hidden}
 #side{width:250px;min-width:250px;background:rgba(0,18,0,.94);border-left:1px solid #00ff4155;display:flex;flex-direction:column;transition:margin .25s}
 #side.hide{margin-right:-260px}
@@ -86,7 +88,7 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 <button id="lgo">⚡ دخول ⚡</button><div id="lerr"></div>
 </div></div>
 <div id="app" class="hidden">
-<div id="head"><button id="menu">☰</button><span id="root">☠ ROOT</span><span id="sname"></span><span id="live">● 24/7</span></div>
+<div id="head"><button id="menu">☰</button><span id="root">☠ ROOT</span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span><button id="clr">🧹</button><button id="lang">کوردی</button></div>
 <div id="main">
 <div id="side"><h3>☠ لوحة التحكم <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
 <div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
@@ -102,6 +104,55 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 <div id="bar"><input id="cmd" placeholder="اكتب الأمر هنا..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="go">▶</button></div>
 </div></div></div>
 <script>
+let LANG=localStorage.getItem('lang')||'ar';
+const STR={
+login_sub:{ar:'// الدخول إلى الطرفية //',ku:'// چوونەژوورەوە بۆ تێرمیناڵ //'},
+lu_ph:{ar:'اسم المستخدم',ku:'ناوی بەکارهێنەر'},
+lp_ph:{ar:'كلمة المرور',ku:'پاسۆرد'},
+lgo:{ar:'⚡ دخول ⚡',ku:'⚡ چوونەژوورەوە ⚡'},
+wrong:{ar:'❌ بيانات خاطئة',ku:'❌ زانیاری هەڵەیە'},
+title:{ar:'طرفية السيرفر',ku:'تێرمیناڵی سێرڤەر'},
+clear:{ar:'مسح',ku:'سڕینەوە'},
+tabS:{ar:'الجلسات',ku:'جلسەکان'},
+tabF:{ar:'📁 الملفات',ku:'📁 فایلەکان'},
+newS:{ar:'＋ جلسة جديدة',ku:'＋ جلسەی نوێ'},
+newF:{ar:'＋ ملف جديد',ku:'＋ فایلی نوێ'},
+cmd_ph:{ar:'اكتب الأمر هنا...',ku:'فەرمان بنووسە...'},
+cpy:{ar:'📋 نسخ المخرجات',ku:'📋 کۆپی خروجی'},
+copied:{ar:'✅ تم النسخ',ku:'✅ کۆپی کرا'},
+screen:{ar:'🖥 شاشة جديدة',ku:'🖥 شاشەی نوێ'},
+stop_q:{ar:'هل تريد إيقاف هذا الأمر؟',ku:'دەتەوێت ئەم فەرمانە بوەستێنیت؟'},
+delS_q:{ar:'حذف الجلسة؟',ku:'جلسەکە بسڕمەوە؟'},
+sess_name:{ar:'اسم الجلسة:',ku:'ناوی جلسە:'},
+newSess_name:{ar:'اسم الجلسة الجديدة:',ku:'ناوی جلسە نوێکە:'},
+defSess:{ar:'جلسة',ku:'جلسە'},
+delF_q:{ar:'حذف الملف؟',ku:'فایلەکە بسڕمەوە؟'},
+saved:{ar:'✅ تم الحفظ',ku:'✅ پاشەکەوت کرا'},
+failed:{ar:'❌ فشل',ku:'❌ شکستی هێنا'},
+pickSess:{ar:'اختر جلسة أولاً',ku:'سەرەتا جلسەیەک هەڵبژێرە'},
+fileName_q:{ar:'اكتب اسم الملف',ku:'ناوی فایل بنووسە'},
+save:{ar:'💾 حفظ',ku:'💾 پاشەکەوت'},
+run:{ar:'▶ تشغيل',ku:'▶ ڕەن'}};
+function T(k){return (STR[k]||{})[LANG]||k;}
+function setLang(l){LANG=l;localStorage.setItem('lang',l);
+document.documentElement.lang=l==='ar'?'ar':'ckb';
+document.getElementById('lang').textContent=l==='ar'?'کوردی':'عربي';
+document.querySelector('#lbox p').textContent=T('login_sub');
+document.getElementById('lu').placeholder=T('lu_ph');
+document.getElementById('lp').placeholder=T('lp_ph');
+document.getElementById('lgo').textContent=T('lgo');
+document.getElementById('title').textContent=T('title');
+document.getElementById('clr').title=T('clear');
+document.getElementById('clr').onclick=()=>{out.innerHTML='';cur=null;};
+document.getElementById('tabS').textContent=T('tabS');
+document.getElementById('tabF').textContent=T('tabF');
+document.getElementById('newS').textContent=T('newS');
+document.getElementById('newF').textContent=T('newF');
+document.getElementById('cmd').placeholder=T('cmd_ph');
+document.getElementById('esave').textContent=T('save');
+document.getElementById('erun').textContent=T('run');
+if(sid)loadSessions();}
+document.getElementById('lang').onclick=()=>setLang(LANG==='ar'?'ku':'ar');
 let sid=null,off=0,gen=-1,out=document.getElementById('out'),cur=null,pollT=null;
 let cv=document.getElementById('matrix'),cx=cv.getContext('2d');
 function msize(){cv.width=innerWidth;cv.height=innerHeight;}
@@ -131,13 +182,13 @@ cur.innerHTML+=ansiToHtml(txt);
 if(nearBottom)cur.scrollTop=cur.scrollHeight;}
 function scrollTop(){window.scrollTo(0,0);}
 function newBlock(c){let d=document.createElement('div');d.className='blk';
-d.innerHTML='<div class="chead"><span class="prompt">➤</span><span class="cmd"></span><button class="stp">⏹</button><button class="stp updn">⬆</button></div><div class="res"></div><button class="cpy">📋 نسخ المخرجات</button>';
+d.innerHTML='<div class="chead"><span class="prompt">➤</span><span class="cmd"></span><button class="stp">⏹</button><button class="stp updn">⬆</button></div><div class="res"></div><button class="cpy"></button>';d.querySelector('.cpy').textContent=T('cpy');
 d.querySelector('.cmd').textContent=c;out.prepend(d);cur=d.querySelector('.res');
 d.querySelector('.updn').onclick=()=>{let r=d.querySelector('.res');
 if(r.scrollTop<40)r.scrollTop=r.scrollHeight;else r.scrollTop=0;};
-d.querySelector('.stp').onclick=async()=>{if(!confirm('هل تريد إيقاف هذا الأمر؟'))return;
+d.querySelector('.stp').onclick=async()=>{if(!confirm(T('stop_q')))return;
 await fetch('/api/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid:sid})});};
-let my=cur;d.querySelector('.cpy').onclick=e=>{navigator.clipboard.writeText(my.textContent).then(()=>{e.target.textContent='✅ تم النسخ';setTimeout(()=>e.target.textContent='📋 نسخ المخرجات',1500);});};
+let my=cur;d.querySelector('.cpy').onclick=e=>{navigator.clipboard.writeText(my.textContent).then(()=>{e.target.textContent=T('copied');setTimeout(()=>e.target.textContent=T('cpy'),1500);});};
 scrollTop();}
 async function poll(){clearTimeout(pollT);try{
 let r=await fetch('/read?sid='+sid+'&off='+off);
@@ -145,11 +196,11 @@ if(!r.ok)return retry();let j=await r.json();
 if(j.error)return loadSessions();
 if(gen!==-1&&j.gen!==gen){
   // شاشة جديدة: أعد القراءة من الصفر لجلب اللوگو كاملاً
-  newBlock('🖥 شاشة جديدة');gen=j.gen;off=0;
+  newBlock(T('screen'));gen=j.gen;off=0;
   let r2=await fetch('/read?sid='+sid+'&off=0');
   if(r2.ok){let k=await r2.json();gen=k.gen;if(k.data)appendOut(k.data);off=k.off;}
 }else{gen=j.gen;
-  if(j.off<off){newBlock('🖥 شاشة جديدة');off=0;}
+  if(j.off<off){newBlock(T('screen'));off=0;}
   else{if(j.data)appendOut(j.data);off=j.off;}}
 }catch(e){}pollT=setTimeout(poll,800);}
 function retry(){pollT=setTimeout(poll,2500);}
@@ -162,18 +213,18 @@ list.forEach(s=>{let d=document.createElement('div');d.className='sitem'+(s.id==
 let nm=document.createElement('span');nm.className='nm';nm.textContent=s.name;
 nm.onclick=()=>{switchSid(s.id);if(innerWidth<700)setSide(false);};
 let rn=document.createElement('button');rn.textContent='✏️';
-rn.onclick=async()=>{let n=prompt('اسم الجلسة:',s.name);if(!n)return;
+rn.onclick=async()=>{let n=prompt(T('sess_name'),s.name);if(!n)return;
 await fetch('/api/sessions/'+s.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})});loadSessions();};
 let del=document.createElement('button');del.textContent='🗑️';
-del.onclick=async()=>{if(!confirm('حذف الجلسة؟'))return;
+del.onclick=async()=>{if(!confirm(T('delS_q')))return;
 await fetch('/api/sessions/'+s.id,{method:'DELETE'});if(s.id===sid){sid=null;off=0;}loadSessions();};
 d.append(nm,rn,del);sl.appendChild(d);});
 let cur2=list.find(s=>s.id===sid);
 document.getElementById('sname').textContent=cur2?('◉ '+cur2.name):'';
 out.innerHTML='';cur=null;off=0;poll();}
 function switchSid(id){sid=id;out.innerHTML='';cur=null;off=0;gen=-1;loadSessions();}
-async function mkSession(){let n=prompt('اسم الجلسة الجديدة:','جلسة');
-if(n===null)return;let r=await fetch('/api/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n||'جلسة'})});
+async function mkSession(){let n=prompt(T('newSess_name'),T('defSess'));
+if(n===null)return;let r=await fetch('/api/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n||T('defSess')})});
 let j=await r.json();if(j.id){sid=j.id;loadSessions();}}
 async function send(){let c=document.getElementById('cmd').value;if(!c||!sid)return;
 document.getElementById('cmd').value='';newBlock(c);
@@ -212,7 +263,7 @@ d.appendChild(nm);
 if(!it.dir){let rn=document.createElement('button');rn.textContent='▶';
 rn.onclick=()=>runFile(it.path);d.appendChild(rn);
 let del=document.createElement('button');del.textContent='🗑️';
-del.onclick=async()=>{if(!confirm('حذف الملف؟'))return;
+del.onclick=async()=>{if(!confirm(T('delF_q')))return;
 await fetch('/api/file?path='+encodeURIComponent(it.path),{method:'DELETE'});loadFiles();};
 d.appendChild(del);}
 fl.appendChild(d);});}
@@ -223,19 +274,19 @@ let r=await fetch('/api/file?path='+encodeURIComponent(path));
 if(r.ok){let j=await r.json();document.getElementById('eta').value=j.content;}
 else document.getElementById('eta').value='';}
 async function saveEditor(silent){let p=document.getElementById('efile').value;
-if(!p)return alert('اكتب اسم الملف');
+if(!p)return alert(T('fileName_q'));
 let r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({path:p,content:document.getElementById('eta').value})});
-if(!silent)alert(r.ok?'✅ تم الحفظ':'❌ فشل');loadFiles();return p;}
+if(!silent)alert(r.ok?T('saved'):T('failed'));loadFiles();return p;}
 document.getElementById('esave').onclick=()=>saveEditor(false);
 document.getElementById('ex').onclick=()=>document.getElementById('editor').classList.add('hidden');
 document.getElementById('edel').onclick=async()=>{let p=document.getElementById('efile').value;
-if(!p||!confirm('حذف الملف؟'))return;
+if(!p||!confirm(T('delF_q')))return;
 await fetch('/api/file?path='+encodeURIComponent(p),{method:'DELETE'});
 document.getElementById('editor').classList.add('hidden');loadFiles();};
 document.getElementById('newF').onclick=()=>{document.getElementById('efile').value=fdir+'/';
 document.getElementById('eta').value='';document.getElementById('editor').classList.remove('hidden');};
-async function runFile(path){if(!sid)return alert('اختر جلسة أولاً');
+async function runFile(path){if(!sid)return alert(T('pickSess'));
 await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({path:path,sid:sid})});setSide(false);}
 document.getElementById('erun').onclick=async()=>{let p=await saveEditor(true);
@@ -243,10 +294,11 @@ if(p){await runFile(p);document.getElementById('editor').classList.add('hidden')
 document.getElementById('cmd').addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 async function doLogin(){let r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({u:document.getElementById('lu').value,p:document.getElementById('lp').value})});
-if(r.ok){showApp();loadSessions();}else document.getElementById('lerr').textContent='❌ بيانات خاطئة';}
+if(r.ok){showApp();loadSessions();}else document.getElementById('lerr').textContent=T('wrong');}
 document.getElementById('lgo').onclick=doLogin;
 document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 if(innerWidth<700)document.getElementById('side').classList.add('hide');
+setLang(LANG);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 (async()=>{let r=await fetch('/api/sessions');if(r.ok){showApp();loadSessions();}})();
 </script></body></html>
