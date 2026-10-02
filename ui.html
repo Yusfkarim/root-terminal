@@ -42,6 +42,20 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 .sitem .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ccffcc}
 .sitem button{background:none;border:none;color:var(--grn);font-size:15px;padding:2px 6px;opacity:.8}
 #newS{margin:8px;padding:12px;background:#002200;color:var(--grn);border:1px dashed var(--grn);border-radius:10px;font-size:15px;font-family:inherit}
+#tabs{display:flex;border-bottom:1px dashed #00ff4155}
+#tabs button{flex:1;background:none;border:none;color:var(--grn);padding:11px;font-size:14px;font-family:inherit;opacity:.55}
+#tabs button.on{opacity:1;background:rgba(0,255,65,.08);box-shadow:inset 0 -2px 0 var(--grn)}
+#flist{flex:1;overflow-y:auto;padding:8px}
+.fitem{display:flex;align-items:center;gap:6px;padding:10px;border:1px solid #00ff4133;border-radius:10px;margin-bottom:8px;background:#000;font-size:13px}
+.fitem .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ffd97d}
+.fitem button{background:none;border:none;font-size:15px;padding:2px 5px}
+#fcwd{padding:8px 10px;font-size:11px;color:var(--grn);opacity:.7;word-break:break-all}
+#editor{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.96);display:flex;flex-direction:column;padding:10px}
+#ebar{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+#efile{flex:1;padding:11px;background:#001100;color:var(--grn);border:1px solid var(--grn);border-radius:8px;font-size:14px;font-family:inherit;min-width:0}
+#ebar button{padding:11px 13px;background:#002200;color:var(--grn);border:1px solid var(--grn);border-radius:8px;font-size:15px}
+#erun{background:#3d0000!important;color:#ff6666!important;border-color:#ff0000!important}
+#eta{flex:1;background:#000;color:#d9ffd9;border:1px solid var(--grn);border-radius:10px;font-size:14px;font-family:monospace;padding:12px;line-height:1.8}
 #body{flex:1;display:flex;flex-direction:column;min-width:0}
 #out{flex:1;overflow-y:auto;padding:10px}
 .blk{background:linear-gradient(180deg,rgba(12,0,0,.94),rgba(0,14,0,.94));border:1px solid #00ff4166;border-right:3px solid var(--red);border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 0 14px #00ff4422,0 0 26px #ff000022}
@@ -69,7 +83,16 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 <div id="app" class="hidden">
 <div id="head"><button id="menu">☰</button><span id="root">☠ ROOT</span><span id="sname"></span></div>
 <div id="main">
-<div id="side"><h3>📁 الجلسات <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3><div id="slist"></div><button id="newS">＋ جلسة جديدة</button></div>
+<div id="side"><h3>☠ لوحة التحكم <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
+<div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
+<div id="slist"></div><button id="newS">＋ جلسة جديدة</button>
+<div id="fwrap" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+<div id="fcwd"></div><div id="flist"></div>
+<button id="newF" style="margin:8px;padding:12px;background:#002200;color:var(--grn);border:1px dashed var(--grn);border-radius:10px;font-size:15px;font-family:inherit">＋ ملف جديد</button>
+</div></div>
+<div id="editor" class="hidden"><div id="ebar">
+<button id="ex">✖</button><input id="efile" placeholder="/data/work/file.py"><button id="esave">💾 حفظ</button><button id="erun">▶ تشغيل</button><button id="edel">🗑️</button>
+</div><textarea id="eta" spellcheck="false"></textarea></div>
 <div id="body"><div id="out"></div><div id="end"></div>
 <div id="bar"><input id="cmd" placeholder="اكتب الأمر هنا..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="go">▶</button></div>
 </div></div></div>
@@ -133,6 +156,57 @@ document.getElementById('overlay').onclick=()=>setSide(false);
 document.getElementById('go').onclick=send;
 document.getElementById('menu').onclick=()=>document.getElementById('side').classList.toggle('hide');
 document.getElementById('newS').onclick=mkSession;
+let fdir='/data/work';
+function showTab(t){let s=t==='s';
+document.getElementById('slist').style.display=s?'':'none';
+document.getElementById('newS').style.display=s?'':'none';
+document.getElementById('fwrap').classList.toggle('hidden',s);
+document.getElementById('tabS').classList.toggle('on',s);
+document.getElementById('tabF').classList.toggle('on',!s);
+if(!s)loadFiles();}
+document.getElementById('tabS').onclick=()=>showTab('s');
+document.getElementById('tabF').onclick=()=>showTab('f');
+async function loadFiles(){let r=await fetch('/api/files?dir='+encodeURIComponent(fdir));
+if(!r.ok)return;let j=await r.json();if(j.error)return;
+document.getElementById('fcwd').textContent=j.cwd;let fl=document.getElementById('flist');fl.innerHTML='';
+if(j.cwd!=='/'){let up=document.createElement('div');up.className='fitem';
+up.innerHTML='<span class="nm">⬆ ..</span>';
+up.onclick=()=>{fdir=j.cwd.split('/').slice(0,-1).join('/')||'/';loadFiles();};fl.appendChild(up);}
+j.items.forEach(it=>{let d=document.createElement('div');d.className='fitem';
+let nm=document.createElement('span');nm.className='nm';nm.textContent=(it.dir?'📁 ':'📄 ')+it.name;
+nm.onclick=()=>{if(it.dir){fdir=it.path;loadFiles();}else openEditor(it.path);};
+d.appendChild(nm);
+if(!it.dir){let rn=document.createElement('button');rn.textContent='▶';
+rn.onclick=()=>runFile(it.path);d.appendChild(rn);
+let del=document.createElement('button');del.textContent='🗑️';
+del.onclick=async()=>{if(!confirm('حذف الملف؟'))return;
+await fetch('/api/file?path='+encodeURIComponent(it.path),{method:'DELETE'});loadFiles();};
+d.appendChild(del);}
+fl.appendChild(d);});}
+async function openEditor(path){document.getElementById('efile').value=path;
+document.getElementById('eta').value='... جار التحميل ...';
+document.getElementById('editor').classList.remove('hidden');
+let r=await fetch('/api/file?path='+encodeURIComponent(path));
+if(r.ok){let j=await r.json();document.getElementById('eta').value=j.content;}
+else document.getElementById('eta').value='';}
+async function saveEditor(silent){let p=document.getElementById('efile').value;
+if(!p)return alert('اكتب اسم الملف');
+let r=await fetch('/api/file',{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({path:p,content:document.getElementById('eta').value})});
+if(!silent)alert(r.ok?'✅ تم الحفظ':'❌ فشل');loadFiles();return p;}
+document.getElementById('esave').onclick=()=>saveEditor(false);
+document.getElementById('ex').onclick=()=>document.getElementById('editor').classList.add('hidden');
+document.getElementById('edel').onclick=async()=>{let p=document.getElementById('efile').value;
+if(!p||!confirm('حذف الملف؟'))return;
+await fetch('/api/file?path='+encodeURIComponent(p),{method:'DELETE'});
+document.getElementById('editor').classList.add('hidden');loadFiles();};
+document.getElementById('newF').onclick=()=>{document.getElementById('efile').value=fdir+'/';
+document.getElementById('eta').value='';document.getElementById('editor').classList.remove('hidden');};
+async function runFile(path){if(!sid)return alert('اختر جلسة أولاً');
+await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({path:path,sid:sid})});setSide(false);}
+document.getElementById('erun').onclick=async()=>{let p=await saveEditor(true);
+if(p){await runFile(p);document.getElementById('editor').classList.add('hidden');}};
 document.getElementById('cmd').addEventListener('keydown',e=>{if(e.key==='Enter')send();});
 async function doLogin(){let r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
 body:JSON.stringify({u:document.getElementById('lu').value,p:document.getElementById('lp').value})});

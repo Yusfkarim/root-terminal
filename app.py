@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ROOT web terminal: multi-session, Arabic hacker UI, cookie login."""
-import json, os, pty, re, secrets, select, signal, subprocess, threading, time
+import json, os, pty, re, secrets, select, shlex, signal, subprocess, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -135,6 +135,33 @@ def list_sessions():
         return [{"id": sid, "name": s["name"]} for sid, s in sessions.items()]
 
 
+def resolve_path(p):
+    p = (p or "").strip()
+    if not p:
+        return None
+    if not p.startswith("/"):
+        p = "/data/work/" + p
+    p = os.path.normpath(p)
+    return p
+
+
+def list_dir(d):
+    d = resolve_path(d) or "/data/work"
+    try:
+        items = []
+        for name in sorted(os.listdir(d)):
+            full = os.path.join(d, name)
+            try:
+                st = os.stat(full)
+                items.append({"name": name, "path": full,
+                              "dir": os.path.isdir(full), "size": st.st_size})
+            except OSError:
+                pass
+        return {"cwd": d, "items": items}
+    except OSError as e:
+        return {"error": str(e)}
+
+
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -200,6 +227,24 @@ class H(BaseHTTPRequestHandler):
             return self._deny()
         if u.path == "/api/sessions":
             return self._send(json.dumps(list_sessions()), "application/json")
+        if u.path == "/api/files":
+            qs = parse_qs(u.query)
+            return self._send(json.dumps(
+                list_dir(qs.get("dir", ["/data/work"])[0])), "application/json")
+        if u.path == "/api/file":
+            qs = parse_qs(u.query)
+            p = resolve_path(qs.get("path", [""])[0])
+            if not p or os.path.isdir(p):
+                self.send_error(404)
+                return
+            try:
+                with open(p, "rb") as f:
+                    content = f.read(300000).decode("utf-8", "replace")
+                return self._send(json.dumps({"path": p, "content": content}),
+                                  "application/json")
+            except OSError:
+                self.send_error(404)
+                return
         if u.path == "/read":
             qs = parse_qs(u.query)
             sid = qs.get("sid", [""])[0]
@@ -253,7 +298,62 @@ class H(BaseHTTPRequestHandler):
                 except OSError:
                     pass
             return self._send('{"ok":1}', "application/json")
+        if u.path == "/api/file":
+            try:
+                body = json.loads(self._body() or b"{}")
+            except Exception:
+                body = {}
+            p = resolve_path(body.get("path", ""))
+            if not p:
+                self.send_error(400)
+                return
+            try:
+                os.makedirs(os.path.dirname(p) or "/", exist_ok=True)
+                with open(p, "w", encoding="utf-8") as f:
+                    f.write(body.get("content", ""))
+                return self._send(json.dumps({"ok": 1, "path": p}), "application/json")
+            except OSError as e:
+                return self._send(json.dumps({"error": str(e)}), "application/json")
+        if u.path == "/api/run":
+            try:
+                body = json.loads(self._body() or b"{}")
+            except Exception:
+                body = {}
+            p = resolve_path(body.get("path", ""))
+            sid = body.get("sid", "")
+            if not p or not os.path.isfile(p):
+                return self._send(json.dumps({"error": "no file"}), "application/json")
+            with lock:
+                s = sessions.get(sid) or next(iter(sessions.values()), None)
+            if p.endswith(".py"):
+                cmd = "python3 " + shlex.quote(p) + "\n"
+            elif p.endswith(".sh"):
+                cmd = "bash " + shlex.quote(p) + "\n"
+            else:
+                cmd = shlex.quote(p) + "\n"
+            if s:
+                try:
+                    os.write(s["m"], cmd.encode())
+                except OSError:
+                    pass
+            return self._send(json.dumps({"ok": 1}), "application/json")
         self.send_error(404)
+
+    def do_DELETE(self):
+        u = urlparse(self.path)
+        if not authorized(self.headers):
+            return self._deny()
+        if u.path == "/api/file":
+            qs = parse_qs(u.query)
+            p = resolve_path(qs.get("path", [""])[0])
+            try:
+                if p and os.path.isfile(p):
+                    os.remove(p)
+                    return self._send('{"ok":1}', "application/json")
+            except OSError:
+                pass
+            self.send_error(404)
+            return
 
     def do_PATCH(self):
         u = urlparse(self.path)
