@@ -1,0 +1,125 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROOT Terminal</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--grn:#00ff41;--red:#ff1a1a;--bg:#010401}
+body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;overflow-x:hidden}
+#matrix{position:fixed;inset:0;z-index:0;opacity:.22}
+#login{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);padding:20px}
+#lbox{width:100%;max-width:360px;background:#000;border:1px solid var(--grn);border-radius:16px;padding:30px 24px;text-align:center;box-shadow:0 0 40px #00ff4155,inset 0 0 30px #00ff4111}
+#lbox .skull{font-size:46px;filter:drop-shadow(0 0 10px #ff0000)}
+#lbox h1{color:var(--red);font-size:38px;letter-spacing:6px;margin:6px 0 2px;text-shadow:0 0 15px #ff0000}
+#lbox p{color:var(--grn);font-size:14px;margin-bottom:20px;opacity:.8}
+#lbox input{width:100%;margin-bottom:10px;padding:13px;background:#001100;color:var(--grn);border:1px solid var(--grn);border-radius:10px;font-size:16px;font-family:inherit;text-align:center}
+#lbox input:focus{outline:none;box-shadow:0 0 12px #00ff4188}
+#lgo{width:100%;padding:13px;background:linear-gradient(180deg,#003b00,#001a00);color:var(--grn);border:1px solid var(--grn);border-radius:10px;font-size:18px;font-family:inherit;font-weight:bold}
+#lerr{color:#ff5555;min-height:22px;font-size:13px;margin-top:8px}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh}
+#head{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,25,0,.9);border-bottom:1px solid var(--grn);box-shadow:0 0 18px #00ff4433}
+#menu{font-size:22px;background:none;border:1px solid var(--grn);color:var(--grn);border-radius:8px;padding:4px 12px}
+#root{font-size:20px;font-weight:900;color:#fff;background:linear-gradient(135deg,#ff0000,#6e0000);padding:5px 16px;border-radius:8px;letter-spacing:3px;text-shadow:0 0 8px #fff;box-shadow:0 0 22px #ff0000aa;animation:blink 2.2s infinite}
+@keyframes blink{50%{box-shadow:0 0 40px #ff0000}}
+#sname{font-size:14px;color:var(--grn);text-shadow:0 0 6px var(--grn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#main{flex:1;display:flex;overflow:hidden}
+#side{width:250px;min-width:250px;background:rgba(0,18,0,.94);border-left:1px solid #00ff4155;display:flex;flex-direction:column;transition:margin .25s}
+#side.hide{margin-right:-260px}
+#side h3{padding:12px;color:var(--grn);font-size:14px;border-bottom:1px dashed #00ff4155}
+#slist{flex:1;overflow-y:auto;padding:8px}
+.sitem{display:flex;align-items:center;gap:6px;padding:10px;border:1px solid #00ff4133;border-radius:10px;margin-bottom:8px;background:#000;font-size:14px}
+.sitem.on{border-color:var(--grn);box-shadow:0 0 12px #00ff4455;background:#002200}
+.sitem .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ccffcc}
+.sitem button{background:none;border:none;color:var(--grn);font-size:15px;padding:2px 6px;opacity:.8}
+#newS{margin:8px;padding:12px;background:#002200;color:var(--grn);border:1px dashed var(--grn);border-radius:10px;font-size:15px;font-family:inherit}
+#body{flex:1;display:flex;flex-direction:column;min-width:0}
+#out{flex:1;overflow-y:auto;padding:10px}
+.blk{background:rgba(0,14,0,.92);border:1px solid #00ff4166;border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 0 14px #00ff4422}
+.blk .chead{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px dashed #00ff4155}
+.blk .prompt{color:var(--red);font-weight:bold;text-shadow:0 0 6px #ff0000}
+.blk .cmd{flex:1;color:var(--grn);font-weight:bold;font-size:14px;word-break:break-all;text-shadow:0 0 5px var(--grn)}
+.blk .res{padding:10px 12px;white-space:pre-wrap;word-break:break-word;font-size:13px;color:#d8ffd8;min-height:10px;line-height:1.7}
+.blk .res:empty{display:none}
+.cpy{display:block;width:100%;background:#001a00;color:#7dff9b;border:none;border-top:1px solid #00ff4133;padding:9px;font-size:13px;font-family:inherit}
+#end{height:4px}
+#bar{display:flex;gap:6px;padding:10px;background:rgba(0,25,0,.94);border-top:1px solid var(--grn)}
+#cmd{flex:1;font-size:16px;padding:13px;background:#000;color:var(--grn);border:1px solid var(--grn);border-radius:12px;font-family:inherit;box-shadow:0 0 10px #00ff4455;min-width:0}
+#cmd:focus{outline:none;box-shadow:0 0 16px #00ff4488}
+#go{font-size:19px;padding:10px 22px;background:linear-gradient(180deg,#004d00,#002200);color:var(--grn);border:1px solid var(--grn);border-radius:12px}
+.hidden{display:none!important}
+@media(max-width:700px){#side{position:fixed;top:0;bottom:0;right:0;z-index:15;height:100dvh}}
+</style></head><body>
+<canvas id="matrix"></canvas>
+<div id="login"><div id="lbox">
+<div class="skull">💀</div><h1>ROOT</h1><p>// الدخول إلى الطرفية //</p>
+<input id="lu" placeholder="اسم المستخدم" autocomplete="off"><input id="lp" type="password" placeholder="كلمة المرور">
+<button id="lgo">⚡ دخول ⚡</button><div id="lerr"></div>
+</div></div>
+<div id="app" class="hidden">
+<div id="head"><button id="menu">☰</button><span id="root">ROOT</span><span id="sname"></span></div>
+<div id="main">
+<div id="side"><h3>📁 الجلسات</h3><div id="slist"></div><button id="newS">＋ جلسة جديدة</button></div>
+<div id="body"><div id="out"></div><div id="end"></div>
+<div id="bar"><input id="cmd" placeholder="اكتب الأمر هنا..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button id="go">▶</button></div>
+</div></div></div>
+<script>
+let sid=null,off=0,out=document.getElementById('out'),cur=null,pollT=null;
+let cv=document.getElementById('matrix'),cx=cv.getContext('2d');
+function msize(){cv.width=innerWidth;cv.height=innerHeight;}
+msize();addEventListener('resize',msize);
+let cols=Math.floor(innerWidth/16),drops=Array(cols).fill(0);
+setInterval(()=>{cx.fillStyle='rgba(0,0,0,.09)';cx.fillRect(0,0,cv.width,cv.height);
+cx.fillStyle='#00ff41';cx.font='14px monospace';
+for(let i=0;i<drops.length;i++){cx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*16,drops[i]*16);
+if(drops[i]*16>cv.height&&Math.random()>.975)drops[i]=0;drops[i]++;}},55);
+function scrollDown(){document.getElementById('end').scrollIntoView(false);}
+function newBlock(c){let d=document.createElement('div');d.className='blk';
+d.innerHTML='<div class="chead"><span class="prompt">➤</span><span class="cmd"></span></div><div class="res"></div><button class="cpy">📋 نسخ المخرجات</button>';
+d.querySelector('.cmd').textContent=c;out.appendChild(d);cur=d.querySelector('.res');
+let my=cur;d.querySelector('.cpy').onclick=e=>{navigator.clipboard.writeText(my.textContent).then(()=>{e.target.textContent='✅ تم النسخ';setTimeout(()=>e.target.textContent='📋 نسخ المخرجات',1500);});};
+scrollDown();}
+async function poll(){clearTimeout(pollT);try{
+let r=await fetch('/read?sid='+sid+'&off='+off);
+if(!r.ok)return retry();let j=await r.json();
+if(j.error)return loadSessions();
+if(j.data){if(!cur)newBlock('···');cur.textContent+=j.data;scrollDown();}
+off=j.off;}catch(e){}pollT=setTimeout(poll,800);}
+function retry(){pollT=setTimeout(poll,2500);}
+async function loadSessions(){let r=await fetch('/api/sessions');
+if(!r.ok)return showLogin();
+let list=await r.json();let sl=document.getElementById('slist');sl.innerHTML='';
+if(!list.length){await mkSession();return;}
+if(!list.find(s=>s.id===sid))sid=list[0].id;
+list.forEach(s=>{let d=document.createElement('div');d.className='sitem'+(s.id===sid?' on':'');
+let nm=document.createElement('span');nm.className='nm';nm.textContent=s.name;
+nm.onclick=()=>{switchSid(s.id);if(innerWidth<700)toggleSide(false);};
+let rn=document.createElement('button');rn.textContent='✏️';
+rn.onclick=async()=>{let n=prompt('اسم الجلسة:',s.name);if(!n)return;
+await fetch('/api/sessions/'+s.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})});loadSessions();};
+let del=document.createElement('button');del.textContent='🗑️';
+del.onclick=async()=>{if(!confirm('حذف الجلسة؟'))return;
+await fetch('/api/sessions/'+s.id,{method:'DELETE'});if(s.id===sid){sid=null;off=0;}loadSessions();};
+d.append(nm,rn,del);sl.appendChild(d);});
+let cur2=list.find(s=>s.id===sid);
+document.getElementById('sname').textContent=cur2?('◉ '+cur2.name):'';
+out.innerHTML='';cur=null;off=0;poll();}
+function switchSid(id){sid=id;out.innerHTML='';cur=null;off=0;loadSessions();}
+async function mkSession(){let n=prompt('اسم الجلسة الجديدة:','جلسة');
+if(n===null)return;let r=await fetch('/api/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n||'جلسة'})});
+let j=await r.json();if(j.id){sid=j.id;loadSessions();}}
+async function send(){let c=document.getElementById('cmd').value;if(!c||!sid)return;
+document.getElementById('cmd').value='';newBlock(c);
+await fetch('/write?sid='+sid,{method:'POST',body:c+'\n'});}
+function showLogin(){document.getElementById('login').classList.remove('hidden');document.getElementById('app').classList.add('hidden');}
+function showApp(){document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');}
+function toggleSide(f){document.getElementById('side').classList.toggle('hide',f===undefined?undefined:!f);}
+document.getElementById('go').onclick=send;
+document.getElementById('menu').onclick=()=>document.getElementById('side').classList.toggle('hide');
+document.getElementById('newS').onclick=mkSession;
+document.getElementById('cmd').addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+async function doLogin(){let r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({u:document.getElementById('lu').value,p:document.getElementById('lp').value})});
+if(r.ok){showApp();loadSessions();}else document.getElementById('lerr').textContent='❌ بيانات خاطئة';}
+document.getElementById('lgo').onclick=doLogin;
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+if(innerWidth<700)document.getElementById('side').classList.add('hide');
+(async()=>{let r=await fetch('/api/sessions');if(r.ok){showApp();loadSessions();}})();
+</script></body></html>
