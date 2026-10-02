@@ -106,9 +106,20 @@ body{background:var(--bg);color:var(--grn);font-family:'Courier New',monospace;o
 .mbox .mbtns button.danger{background:#2a0000;color:#ff6666;border-color:#ff0000}
 #toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:31;background:#001a00;color:var(--grn);border:1px solid var(--grn);border-radius:8px;padding:7px 14px;font-size:13px;box-shadow:0 0 12px #00ff4155;pointer-events:none}
 .hidden{display:none!important}
+#skulls{position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+#skulls .sk{position:absolute;line-height:1;opacity:.5;filter:drop-shadow(0 0 6px #ff0000) drop-shadow(0 0 12px #ff3300);will-change:transform,opacity;user-select:none}
+#skulls .fall{top:0;opacity:0}
+@keyframes skFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-12px) rotate(10deg)}}
+@keyframes skSink{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(12px) rotate(-10deg)}}
+@keyframes skSpin{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.25)}100%{transform:rotate(360deg) scale(1)}}
+@keyframes skFlick{0%,100%{opacity:.5}42%{opacity:.1}46%{opacity:.85}50%{opacity:.15}54%{opacity:.7}}
+@keyframes skDrift{0%,100%{transform:translateX(0)}50%{transform:translateX(16px) rotate(-8deg)}}
+@keyframes skPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 4px #ff0000)}50%{transform:scale(1.35);filter:drop-shadow(0 0 16px #ff0000) drop-shadow(0 0 28px #ff5500)}}
+@keyframes skFall{0%{transform:translateY(-12vh) rotate(0);opacity:0}10%,85%{opacity:.6}100%{transform:translateY(112vh) rotate(540deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){#skulls .sk{animation:none!important}#skulls .fall{display:none}}
 @media(max-width:700px){#side{position:fixed;top:0;bottom:0;right:0;z-index:15;height:100dvh}}
 </style></head><body>
-<canvas id="matrix"></canvas><div id="grid"></div><div id="scan"></div><div id="vig"></div>
+<canvas id="matrix"></canvas><div id="grid"></div><div id="scan"></div><div id="vig"></div><div id="skulls" aria-hidden="true"></div>
 <div id="overlay" class="hidden"></div>
 <div id="login"><div id="lbox">
 <div class="skull">💀</div><h1>☠ ROOT ☠</h1><p>// الدخول إلى الطرفية //</p>
@@ -385,4 +396,24 @@ if(innerWidth<700)document.getElementById('side').classList.add('hide');
 setLang(LANG);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 (async()=>{let r=await fetch('/api/sessions');if(r.ok){showApp();loadSessions();}})();
+(function(){
+const L=document.getElementById('skulls');if(!L)return;
+const G=['💀','☠','💀','☠️'],A=['skFloat','skSpin','skFlick','skDrift','skPulse','skSink'];
+const mob=innerWidth<700,r=(a,b)=>a+Math.random()*(b-a);
+function add(pos,anim,cls,dur,timing){
+const s=document.createElement('span');s.className='sk'+(cls?' '+cls:'');
+s.textContent=G[Math.random()*G.length|0];
+s.style.cssText=pos+';font-size:'+r(mob?13:18,mob?22:34).toFixed(0)+'px;animation:'+anim+' '+(dur||r(2.5,7)).toFixed(1)+'s '+(timing||'ease-in-out')+' '+(-r(0,8)).toFixed(1)+'s infinite';
+L.appendChild(s);}
+const n=mob?6:13,m=mob?5:9;
+for(let i=0;i<n;i++){const x=((i+.5)/n*100).toFixed(1);
+add('left:'+x+'%;top:'+r(0,8).toFixed(0)+'px',A[i%A.length]);
+add('left:'+x+'%;bottom:'+r(0,8).toFixed(0)+'px',A[(i+3)%A.length]);}
+for(let i=0;i<m;i++){const y=((i+.5)/m*100).toFixed(1);
+add('top:'+y+'%;left:'+r(0,10).toFixed(0)+'px',A[(i+1)%A.length]);
+add('top:'+y+'%;right:'+r(0,10).toFixed(0)+'px',A[(i+4)%A.length]);}
+const f=mob?3:6;
+for(let i=0;i<f;i++){const side=i%2?'left':'right';
+add(side+':'+r(2,mob?24:60).toFixed(0)+'px','skFall','fall',r(7,14),'linear');}
+})();
 </script></body></html>
