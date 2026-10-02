@@ -21,3 +21,8 @@ primary_region = "fra"
   size = "shared-cpu-1x"
   memory = "2GB"
   restart_policy = "always"
+
+[[mounts]]
+  source = "data"
+  destination = "/data"
+  initial_size = "3GB"

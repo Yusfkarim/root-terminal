@@ -43,8 +43,18 @@ def shell_env_home():
         rc = os.path.join(home, ".bashrc")
         if not os.path.exists(rc):
             with open(rc, "w") as f:
-                f.write('export PATH="/data/.local/bin:$PATH"\n'
-                        'stty -echo 2>/dev/null\n')
+                f.write('export PATH="/data/.local/bin:/data/.npm/bin:$PATH"\n'
+                        'export PIP_TARGET=/data/.pylibs\n'
+                        'export PYTHONPATH=/data/.pylibs:$PYTHONPATH\n'
+                        'export NPM_CONFIG_PREFIX=/data/.npm\n'
+                        'stty -echo 2>/dev/null\n'
+                        'install(){ local p="$1"; echo "[1/3] apt: $p...";'
+                        ' if apt-get install -y "$p" 2>/dev/null; then echo "$p" >> /data/apt.txt; sort -u /data/apt.txt -o /data/apt.txt; echo "OK apt + saved"; return 0; fi;'
+                        ' echo "[2/3] pip: $p...";'
+                        ' if pip install --quiet "$p" 2>&1 | tail -1; pip show "$p" >/dev/null 2>&1; then echo "OK pip (saved)"; return 0; fi;'
+                        ' echo "[3/3] npm: $p...";'
+                        ' if npm i -g "$p" 2>&1 | tail -1; [ -x "/data/.npm/bin/$p" ] || command -v "$p" >/dev/null; then echo "OK npm (saved)"; return 0; fi;'
+                        ' echo "FAIL: not found"; return 1; }\n')
     except OSError:
         pass
     return home
@@ -54,7 +64,10 @@ def spawn_shell_for(s):
     m, sl = pty.openpty()
     home = shell_env_home()
     env = dict(os.environ, HOME=home,
-               PATH="/data/.local/bin:" + os.environ.get("PATH", ""))
+               PATH="/data/.local/bin:/data/.npm/bin:" + os.environ.get("PATH", ""),
+               PIP_TARGET="/data/.pylibs",
+               PYTHONPATH="/data/.pylibs:" + os.environ.get("PYTHONPATH", ""),
+               NPM_CONFIG_PREFIX="/data/.npm")
     try:
         cwd = "/data/work" if os.path.isdir("/data/work") else "/app"
     except Exception:
