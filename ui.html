@@ -48,14 +48,6 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 @keyframes headSweep{0%{transform:translateX(-100%)}35%,100%{transform:translateX(100%)}}
 #menu{font-size:17px;background:none;border:1px solid var(--grn);color:var(--grn);border-radius:7px;padding:2px 9px}
 #head>*{position:relative;z-index:1}
-#topfx{flex:1 1 100%;height:30px;overflow:hidden;border-bottom:1px dashed #00ff4133;background:linear-gradient(180deg,rgba(255,0,0,.08),transparent);animation:fxFlicker 4.5s infinite}
-@keyframes fxFlicker{0%,100%{opacity:1}90%{opacity:1}91%{opacity:.5}92%{opacity:1}94%{opacity:.65}95%{opacity:1}}
-#topfx .fxstrip{position:absolute;inset:0;background:url(/icon-192.png) repeat-x left center;background-size:26px 26px;opacity:.5;filter:drop-shadow(0 0 6px #ff0000);animation:hfillSlide 6s linear infinite}
-#topfx .fxf{position:absolute;top:2px;width:26px;height:26px;border-radius:7px;filter:drop-shadow(0 0 10px #ff0000);animation:fxDrift linear infinite}
-#topfx .f1{animation-duration:9s}
-#topfx .f2{animation-duration:14s;animation-delay:-7s;width:20px;height:20px;top:5px}
-#topfx .f3{animation-duration:19s;animation-delay:-12s;width:23px;height:23px;top:3px}
-@keyframes fxDrift{from{transform:translateX(-50px)}to{transform:translateX(115vw)}}
 #root{font-size:15px;font-weight:900;color:#fff;background:linear-gradient(135deg,#ff0000,#6e0000);padding:5px 12px;border-radius:8px;letter-spacing:2.5px;white-space:nowrap;text-shadow:0 0 8px #fff,0 0 22px #ff0000;box-shadow:0 0 26px #ff0000aa,inset 0 0 9px #00000088;animation:blink 2.2s infinite,glitch 4s infinite;position:relative;overflow:hidden}
 #root::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-130%);animation:rootShine 3s 1s infinite;pointer-events:none}
 @keyframes rootShine{0%{transform:translateX(-130%)}40%,100%{transform:translateX(130%)}}
@@ -171,7 +163,7 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 <button id="lgo">⚡ دخول ⚡</button><div id="lerr"></div>
 </div></div>
 <div id="app" class="hidden">
-<div id="head"><div id="topfx"><div class="fxstrip"></div><img class="fxf f1" src="/icon-192.png" alt=""><img class="fxf f2" src="/icon-192.png" alt=""><img class="fxf f3" src="/icon-192.png" alt=""></div><button id="menu">☰</button><img class="hskull" src="/icon-192.png" alt="skull"><span id="root">☠ ROOT</span><span id="devbox"><img class="dskull" src="/icon-192.png" alt=""><span id="dev">Dev.Yousf_Alkurdi</span><img class="dskull" src="/icon-192.png" alt=""></span><span class="hfill"></span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span></div>
+<div id="head"><button id="menu">☰</button><img class="hskull" src="/icon-192.png" alt="skull"><span id="root">☠ ROOT</span><span id="devbox"><img class="dskull" src="/icon-192.png" alt=""><span id="dev">Dev.Yousf_Alkurdi</span><img class="dskull" src="/icon-192.png" alt=""></span><span class="hfill"></span><span id="title">طرفية السيرفر</span><span id="sname"></span><span id="live">● 24/7</span></div>
 <div id="main">
 <div id="side"><h3><span id="panelT">☠ لوحة التحكم</span> <button id="xside" style="float:left;background:none;border:none;color:var(--red);font-size:16px">✖</button></h3>
 <div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
