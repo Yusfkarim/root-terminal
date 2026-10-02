@@ -10,6 +10,8 @@ def clean_chunk(raw):
     text = re.sub(r"\n{3,}", "\n\n", text)
     out_lines = []
     for line in text.split("\n"):
+        if line.endswith("\r"):
+            line = line[:-1]
         if "\r" in line:
             line = line.rsplit("\r", 1)[-1]
         while "\x08" in line:
