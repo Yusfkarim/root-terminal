@@ -15,6 +15,44 @@ MAX_SESSIONS = 10
 
 lock = threading.Lock()
 sessions = {}
+SESS_FILE = "/data/sessions.json"
+BUF_DIR = "/data/sbuf"
+MAXBUF = 200000
+
+
+def save_sessions():
+    try:
+        if os.path.isdir("/data"):
+            with lock:
+                data = [{"id": sid, "name": s["name"]} for sid, s in sessions.items()]
+            with open(SESS_FILE + ".tmp", "w") as f:
+                json.dump(data, f)
+            os.replace(SESS_FILE + ".tmp", SESS_FILE)
+    except OSError:
+        pass
+
+
+def load_sessions():
+    try:
+        with open(SESS_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def buf_path(sid):
+    return os.path.join(BUF_DIR, sid + ".log")
+
+
+def persist_buf(sid, chunk):
+    try:
+        if not os.path.isdir("/data"):
+            return
+        os.makedirs(BUF_DIR, exist_ok=True)
+        with open(buf_path(sid), "ab") as f:
+            f.write(chunk)
+    except OSError:
+        pass
 
 PAGE = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui.html"),
             encoding="utf-8").read() if os.path.exists(
@@ -41,20 +79,36 @@ def shell_env_home():
         os.makedirs("/data/work", exist_ok=True)
         os.makedirs("/data/.local/bin", exist_ok=True)
         rc = os.path.join(home, ".bashrc")
-        if not os.path.exists(rc):
-            with open(rc, "w") as f:
-                f.write('export PATH="/data/.local/bin:/data/.npm/bin:$PATH"\n'
-                        'export PIP_TARGET=/data/.pylibs\n'
-                        'export PYTHONPATH=/data/.pylibs:$PYTHONPATH\n'
-                        'export NPM_CONFIG_PREFIX=/data/.npm\n'
-                        'stty -echo 2>/dev/null\n'
-                        'install(){ local p="$1"; echo "[1/3] apt: $p...";'
-                        ' if apt-get install -y "$p" 2>/dev/null; then echo "$p" >> /data/apt.txt; sort -u /data/apt.txt -o /data/apt.txt; echo "OK apt + saved"; return 0; fi;'
-                        ' echo "[2/3] pip: $p...";'
-                        ' if pip install --quiet "$p" 2>&1 | tail -1; pip show "$p" >/dev/null 2>&1; then echo "OK pip (saved)"; return 0; fi;'
-                        ' echo "[3/3] npm: $p...";'
-                        ' if npm i -g "$p" 2>&1 | tail -1; [ -x "/data/.npm/bin/$p" ] || command -v "$p" >/dev/null; then echo "OK npm (saved)"; return 0; fi;'
-                        ' echo "FAIL: not found"; return 1; }\n')
+        try:
+            with open(rc) as f:
+                content = f.read()
+        except OSError:
+            content = ""
+        need = ""
+        if "PIP_TARGET" not in content:
+            need += ('export PATH="/data/.local/bin:/data/.npm/bin:$PATH"\n'
+                     'export PIP_TARGET=/data/.pylibs\n'
+                     'export PYTHONPATH=/data/.pylibs:$PYTHONPATH\n'
+                     'export NPM_CONFIG_PREFIX=/data/.npm\n'
+                     'stty -echo 2>/dev/null\n')
+        if "ROOTGUARD" not in content:
+            need += ('# ROOTGUARD: keep session shell alive\n'
+                     'exit(){ echo "⚠ الجلسة دائمة — للإيقاف استخدم زر ⏹"; }\n'
+                     'logout(){ exit; }\n')
+        if "install()" not in content:
+            need += ('install(){ local p="$1"; echo "[1/3] apt: $p...";'
+                     ' if apt-get install -y "$p" 2>/dev/null; then echo "$p" >> /data/apt.txt; sort -u /data/apt.txt -o /data/apt.txt; echo "OK apt + saved"; return 0; fi;'
+                     ' echo "[2/3] pip: $p...";'
+                     ' if pip install --quiet "$p" 2>&1 | tail -1; pip show "$p" >/dev/null 2>&1; then echo "OK pip (saved)"; return 0; fi;'
+                     ' echo "[3/3] npm: $p...";'
+                     ' if npm i -g "$p" 2>&1 | tail -1; [ -x "/data/.npm/bin/$p" ] || command -v "$p" >/dev/null; then echo "OK npm (saved)"; return 0; fi;'
+                     ' echo "FAIL: not found"; return 1; }\n')
+        if need:
+            try:
+                with open(rc, "a") as f:
+                    f.write(need)
+            except OSError:
+                pass
     except OSError:
         pass
     return home
@@ -92,7 +146,8 @@ def drain(s):
                 clean = ANSI.sub("", chunk.decode("utf-8", "replace")).replace("\x08", "")
                 with lock:
                     s["buf"] += clean.encode()
-                    del s["buf"][:-200000]
+                    del s["buf"][:-MAXBUF]
+                persist_buf(s.get("sid", "?"), clean.encode())
         except OSError:
             break
     time.sleep(1)
@@ -103,15 +158,19 @@ def drain(s):
         pass
 
 
-def create_session(name):
+def create_session(name, sid=None, buf=None):
     with lock:
         if len(sessions) >= MAX_SESSIONS:
             return None
-        sid = "s" + secrets.token_hex(4)
-        s = {"name": name[:30] or "session", "buf": bytearray(),
+        sid = sid or ("s" + secrets.token_hex(4))
+        if sid in sessions:
+            sid = "s" + secrets.token_hex(4)
+        s = {"sid": sid, "name": name[:30] or "session",
+             "buf": bytearray(buf or b""),
              "m": None, "p": None, "alive": True, "created": time.time()}
         sessions[sid] = s
     spawn_shell_for(s)
+    save_sessions()
     return sid
 
 
@@ -128,6 +187,12 @@ def kill_session(sid):
             os.killpg(os.getpgid(s["p"].pid), signal.SIGKILL)
         except Exception:
             pass
+        try:
+            if os.path.isfile(buf_path(sid)):
+                os.remove(buf_path(sid))
+        except OSError:
+            pass
+    save_sessions()
 
 
 def list_sessions():
@@ -286,6 +351,19 @@ class H(BaseHTTPRequestHandler):
             if not sid:
                 return self._send(json.dumps({"error": "limit"}), "application/json")
             return self._send(json.dumps({"id": sid, "name": name}), "application/json")
+        if u.path == "/api/stop":
+            try:
+                body = json.loads(self._body() or b"{}")
+            except Exception:
+                body = {}
+            with lock:
+                s = sessions.get(body.get("sid", ""))
+            if s:
+                try:
+                    os.write(s["m"], b"\x03")
+                except OSError:
+                    pass
+            return self._send('{"ok":1}', "application/json")
         if u.path == "/write":
             qs = parse_qs(u.query)
             sid = qs.get("sid", [""])[0]
@@ -376,10 +454,32 @@ class H(BaseHTTPRequestHandler):
                 s = sessions.get(m.group(1))
                 if s and name:
                     s["name"] = name
-                    return self._send('{"ok":1}', "application/json")
+                    renamed = True
+                else:
+                    renamed = False
+            if renamed:
+                save_sessions()
+                return self._send('{"ok":1}', "application/json")
         self.send_error(404)
 
 
-create_session(" الرئيسية")
+restored = load_sessions()
+if restored:
+    for item in restored[:MAX_SESSIONS]:
+        sid = item.get("id", "")
+        if not sid or not re.match(r"^[A-Za-z0-9]+$", sid):
+            continue
+        buf = b""
+        try:
+            with open(buf_path(sid), "rb") as f:
+                f.seek(0, os.SEEK_END)
+                size = f.tell()
+                f.seek(max(0, size - MAXBUF))
+                buf = f.read()[-MAXBUF:]
+        except OSError:
+            pass
+        create_session(item.get("name", "session"), sid=sid, buf=buf)
+else:
+    create_session(" الرئيسية")
 print("ROOT terminal on port", PORT, flush=True)
 ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
