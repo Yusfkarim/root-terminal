@@ -229,6 +229,176 @@ def list_sessions():
         return [{"id": sid, "name": s["name"]} for sid, s in sessions.items()]
 
 
+TG_TOKEN = os.environ.get("TG_TOKEN", "")
+TG_OWNER = os.environ.get("TG_OWNER", "")
+tg_state = {"sid": None, "off": {}}
+
+
+def tg_api(method, payload=None, timeout=40):
+    import urllib.request
+    if not TG_TOKEN:
+        return None
+    url = "https://api.telegram.org/bot%s/%s" % (TG_TOKEN, method)
+    data = json.dumps(payload or {}).encode() if payload else None
+    req = urllib.request.Request(url, data=data,
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return json.loads(r.read().decode("utf-8", "replace"))
+    except Exception as e:
+        print("TG api error:", method, type(e).__name__, flush=True)
+        return None
+
+
+def tg_send(chat, text):
+    if not text:
+        return
+    for i in range(0, len(text), 4000):
+        tg_api("sendMessage", {"chat_id": chat, "text": text[i:i + 4000]}, timeout=20)
+
+
+def tg_sid():
+    with lock:
+        if tg_state["sid"] in sessions:
+            return tg_state["sid"]
+        if sessions:
+            tg_state["sid"] = next(iter(sessions))
+            return tg_state["sid"]
+    sid = create_session("telegram")
+    with lock:
+        tg_state["sid"] = sid
+    return sid
+
+
+def tg_read_new(sid, wait=4):
+    time.sleep(wait)
+    with lock:
+        s = sessions.get(sid)
+        if not s:
+            return None
+        total = len(s["buf"])
+        off = tg_state["off"].get(sid, 0)
+        if off > total:
+            chunk = bytes(s["buf"][-3500:])
+        else:
+            chunk = bytes(s["buf"][off:off + 3500])
+            if total - off > 3500:
+                chunk += ("\n… (+%d) /out بنێرە" % (total - off - 3500)).encode()
+        tg_state["off"][sid] = total
+    return chunk.decode("utf-8", "replace").strip()
+
+
+def tg_tail(sid, n=3500):
+    with lock:
+        s = sessions.get(sid)
+        if not s:
+            return None
+        data = bytes(s["buf"][-n:])
+        tg_state["off"][sid] = len(s["buf"])
+    return data.decode("utf-8", "replace").strip()
+
+
+TG_HELP = ("☠ ROOT Terminal\n\n"
+           "هەر فەرمانێک بنێرە بۆ جێبەجێکردن\n"
+           "/out - دوایین ئاوتپوت\n"
+           "/sessions - جلسەکان\n"
+           "/new ناو - جلسەی نوێ\n"
+           "/use id - گۆڕینی جلسە\n"
+           "/stop - وەستاندنی فەرمان\n"
+           "/clear - پاککردنەوەی شاشە")
+
+
+def tg_handle(up):
+    try:
+        msg = up.get("message") or {}
+        frm = msg.get("from") or {}
+        if str(frm.get("id", "")) != str(TG_OWNER):
+            return
+        chat = (msg.get("chat") or {}).get("id", TG_OWNER)
+        text = (msg.get("text") or "").strip()
+        if not text:
+            return
+        if text in ("/start", "/help"):
+            return tg_send(chat, TG_HELP)
+        if text == "/sessions":
+            lst = list_sessions()
+            lines = ["☠ جلسەکان:"] + ["• %s — %s" % (s["id"], s["name"]) for s in lst]
+            return tg_send(chat, "\n".join(lines))
+        if text.startswith("/new"):
+            name = text[4:].strip()[:30] or "telegram"
+            sid = create_session(name)
+            if sid:
+                with lock:
+                    tg_state["sid"] = sid
+            return tg_send(chat, "✅ " + (sid or "failed"))
+        if text.startswith("/use"):
+            want = text[4:].strip()
+            with lock:
+                ok = want in sessions
+                if ok:
+                    tg_state["sid"] = want
+            return tg_send(chat, "✅ " + want if ok else "❌")
+        sid = tg_sid()
+        if not sid:
+            return tg_send(chat, "❌ no session")
+        if text == "/stop":
+            with lock:
+                s = sessions.get(sid)
+            if s:
+                try:
+                    os.write(s["m"], b"\x03")
+                except OSError:
+                    pass
+            return tg_send(chat, "⏹ بوەستێنرا")
+        if text == "/clear":
+            with lock:
+                s = sessions.get(sid)
+                if s:
+                    s["buf"] = bytearray()
+                    s["gen"] = s.get("gen", 0) + 1
+            try:
+                open(buf_path(sid), "wb").close()
+            except OSError:
+                pass
+            with lock:
+                tg_state["off"][sid] = 0
+            return tg_send(chat, "✅ سڕایەوە")
+        if text == "/out":
+            out = tg_tail(sid) or "…بەتاڵە"
+            return tg_send(chat, out[-3500:] if len(out) > 3500 else out)
+        with lock:
+            s = sessions.get(sid)
+        if s:
+            try:
+                os.write(s["m"], (text + "\n").encode())
+            except OSError:
+                pass
+        out = tg_read_new(sid)
+        tg_send(chat, out if out else "⏳ نێردرا — ئاوتپوت نیە (/out بۆ دواتر)")
+    except Exception as e:
+        print("TG handle error:", e, flush=True)
+
+
+def tg_loop():
+    print("TG bot polling...", flush=True)
+    off = 0
+    fails = 0
+    while True:
+        try:
+            res = tg_api("getUpdates", {"offset": off, "timeout": 30}, timeout=45)
+            if not res or not res.get("ok"):
+                fails += 1
+                time.sleep(min(5 + fails, 30))
+                continue
+            fails = 0
+            for up in res.get("result", []):
+                off = up.get("update_id", off) + 1
+                tg_handle(up)
+        except Exception as e:
+            print("TG loop error:", e, flush=True)
+            time.sleep(5)
+
+
 def resolve_path(p):
     p = (p or "").strip()
     if not p:
@@ -571,5 +741,9 @@ if restored:
         create_session(item.get("name", "session"), sid=sid, buf=buf)
 else:
     create_session(" الرئيسية")
+if TG_TOKEN and TG_OWNER:
+    threading.Thread(target=tg_loop, daemon=True).start()
+    tg_api("sendMessage", {"chat_id": TG_OWNER,
+                           "text": "☠ ROOT Terminal Bot ئامادەیە (/help)"}, timeout=10)
 print("ROOT terminal on port", PORT, flush=True)
 ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()

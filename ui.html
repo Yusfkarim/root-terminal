@@ -88,6 +88,12 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 .sitem .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ccffcc}
 .sitem button{background:none;border:none;color:var(--grn);font-size:15px;padding:2px 6px;opacity:.8}
 #newS{margin:8px;padding:12px;background:#002200;color:var(--grn);border:1px dashed var(--grn);border-radius:10px;font-size:15px;font-family:inherit}
+#qbox{margin:0 8px 8px;border:1px dashed #ff000066;border-radius:10px;padding:8px;background:#0d0202}
+#qtitle{font-size:12px;color:#ff8080;letter-spacing:1px;margin-bottom:6px;text-shadow:0 0 8px #ff0000;animation:titleFlicker 6s infinite}
+#qbox button{display:block;width:100%;margin-bottom:6px;padding:10px;background:#001a00;color:var(--grn);border:1px solid var(--grn);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer}
+#qbox button:last-child{margin-bottom:0}
+#qtargetv{display:block;font-size:11px;color:#ffd24a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr}
+#qstop{background:#2a0000!important;color:#ff6666!important;border-color:#ff0000!important}
 #tabs{display:flex;border-bottom:1px dashed #00ff4155}
 #tabs button{flex:1;background:none;border:none;color:var(--grn);padding:11px;font-size:14px;font-family:inherit;opacity:.55}
 #tabs button.on{opacity:1;background:rgba(0,255,65,.08);box-shadow:inset 0 -2px 0 var(--grn)}
@@ -173,6 +179,11 @@ body::before{left:0}body::after{right:0;animation-delay:2.1s}
 <div id="tabs"><button id="tabS" class="on">الجلسات</button><button id="tabF">📁 الملفات</button></div>
 <div id="langs"><button data-l="ar">عربي</button><button data-l="ku">کوردی</button><button data-l="en">EN</button><button data-l="ru">RU</button></div>
 <div id="slist"></div><button id="newS">＋ جلسة جديدة</button>
+<div id="qbox"><div id="qtitle">⚡ فەرمانی خێرا</div>
+<button id="qtarget">🎯 <span id="qtargett"></span><span id="qtargetv"></span></button>
+<button id="qrun">▶</button>
+<button id="qstop">⏹</button>
+</div>
 <div id="fwrap" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
 <div id="fcwd"></div><div id="flist"></div>
 <button id="newF" style="margin:8px;padding:12px;background:#002200;color:var(--grn);border:1px dashed var(--grn);border-radius:10px;font-size:15px;font-family:inherit">＋ ملف جديد</button>
@@ -229,6 +240,14 @@ fileName_q:{ar:'اكتب اسم الملف',ku:'ناوی فایل بنووسە',
  clrQ:{ar:'مسح الشاشة؟',ku:'شاشەکە پاک بکەمەوە؟',en:'Clear screen?',ru:'Очистить экран?'},
  toastDel:{ar:'✅ تم الحذف',ku:'✅ سڕایەوە',en:'✅ Deleted',ru:'✅ Удалено'},
  upBad:{ar:'⚠️ الرفع ناقص، أعد المحاولة',ku:'⚠️ ئەپڵۆدەکە ناتەواوە، دووبارە هەوڵبدە',en:'⚠️ Upload incomplete, retry',ru:'⚠️ Загрузка неполная, повторите'},
+ quick:{ar:'⚡ أوامر سريعة',ku:'⚡ فەرمانی خێرا',en:'⚡ Quick commands',ru:'⚡ Быстрые команды'},
+ target:{ar:'🎯 الهدف',ku:'🎯 تارگێت',en:'🎯 Target',ru:'🎯 Цель'},
+ target_q:{ar:'أرسل الهدف (URL):',ku:'تارگێت بنێرە (URL):',en:'Send target (URL):',ru:'Отправьте цель (URL):'},
+ notarget:{ar:'حدد الهدف أولاً',ku:'سەرەتا تارگێت دابنێ',en:'Set target first',ru:'Сначала задайте цель'},
+ runscan:{ar:'▶ تشغيل الفحص',ku:'▶ ڕەنکردنی سکەن',en:'▶ Run scan',ru:'▶ Запустить скан'},
+ qstop:{ar:'⏹ إيقاف الفحص',ku:'⏹ وەستاندنی سکەن',en:'⏹ Stop scan',ru:'⏹ Остановить скан'},
+ scanrun:{ar:'🚀 بدأ الفحص',ku:'🚀 سکەنەکە دەستیپێکرد',en:'🚀 Scan started',ru:'🚀 Скан запущен'},
+ stopped:{ar:'⏹ تم الإيقاف',ku:'⏹ بوەستێنرا',en:'⏹ Stopped',ru:'⏹ Остановлено'},
  panel:{ar:'☠ لوحة التحكم',ku:'☠ پانێڵی کۆنتڕۆڵ',en:'☠ Control Panel',ru:'☠ Панель управления'},
  ubtn:{ar:'⬆ رفع',ku:'⬆ ئەپڵۆد',en:'⬆ Upload',ru:'⬆ Загрузить'},
  drop:{ar:'اسحب وأفلت للرفع',ku:'ڕایکێشە و دابنێ بۆ ئەپڵۆد',en:'Drag & drop to upload',ru:'Перетащите для загрузки'},
@@ -252,6 +271,16 @@ async function askPrompt(text,def){let v=await modal({text:text,input:def||'',ok
 function T(k){return (STR[k]||{})[LANG]||k;}
 function setT(id,txt){try{let e=document.getElementById(id);if(e)e.textContent=txt;}catch(_){}}
 function setPH(id,txt){try{let e=document.getElementById(id);if(e)e.placeholder=txt;}catch(_){}}
+function getT(){try{return localStorage.getItem('target')||'';}catch(_){return '';}}
+function putT(v){try{localStorage.setItem('target',v);}catch(_){}}
+let TARGET=getT();
+function renderQ(){setT('qtitle',T('quick'));setT('qtargett',T('target'));setT('qtargetv',TARGET||'…');setT('qrun',T('runscan'));setT('qstop',T('qstop'));}
+async function runScan(askFirst){
+ let t=TARGET;
+ if(!t||askFirst){let n=await askPrompt(T('target_q'),t||'https://');if(n===null)return;if(!n.trim()){toast(T('notarget'),true);return;}t=n.trim();TARGET=t;putT(t);renderQ();}
+ if(!sid){toast(T('pickSess'),true);return;}
+ let c='python3 /data/work/bugbounty_one.py '+t+' --full-auto --deep';
+ newBlock(c);await fetch('/write?sid='+sid,{method:'POST',body:c+'\n'});toast(T('scanrun'));if(innerWidth<700)setSide(false);}
 function setLang(l){LANG=l;putLang(l);
 document.documentElement.dir=(l==='ar'||l==='ku')?'rtl':'ltr';
 document.documentElement.lang=l==='ar'?'ar':(l==='ku'?'ckb':l);
@@ -276,6 +305,7 @@ setT('panelT',T('panel'));
 setT('ubtn',T('ubtn'));
 setT('dropzone',T('drop'));
 setT('eupload',T('eupload'));
+try{renderQ();}catch(_){}
 try{if(sid)loadSessions();}catch(_){}}
 document.querySelectorAll('#langs button').forEach(b=>{b.style.touchAction='manipulation'; b.onclick=()=>setLang(b.dataset.l);});
 let sid=null,off=0,gen=-1,out=document.getElementById('out'),cur=null,pollT=null;
@@ -367,6 +397,10 @@ document.getElementById('overlay').onclick=()=>setSide(false);
 document.getElementById('go').onclick=send;
 document.getElementById('menu').onclick=()=>document.getElementById('side').classList.toggle('hide');
 document.getElementById('newS').onclick=mkSession;
+document.getElementById('qtarget').onclick=()=>runScan(true);
+document.getElementById('qrun').onclick=()=>runScan(false);
+document.getElementById('qstop').onclick=async()=>{if(!sid){toast(T('pickSess'),true);return;}await fetch('/api/stop',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sid:sid})});toast(T('stopped'));};
+try{renderQ();}catch(_){}
 let fdir='/data/work';
 function showTab(t){let s=t==='s';
 document.getElementById('slist').style.display=s?'':'none';
