@@ -228,6 +228,7 @@ fileName_q:{ar:'اكتب اسم الملف',ku:'ناوی فایل بنووسە',
  delHint:{ar:'سيُحذف السجل نهائياً',ku:'تۆماری هەڵگیراو بەتەواوی دەسڕێتەوە',en:'All stored records will be deleted',ru:'Все записи будут удалены'},
  clrQ:{ar:'مسح الشاشة؟',ku:'شاشەکە پاک بکەمەوە؟',en:'Clear screen?',ru:'Очистить экран?'},
  toastDel:{ar:'✅ تم الحذف',ku:'✅ سڕایەوە',en:'✅ Deleted',ru:'✅ Удалено'},
+ upBad:{ar:'⚠️ الرفع ناقص، أعد المحاولة',ku:'⚠️ ئەپڵۆدەکە ناتەواوە، دووبارە هەوڵبدە',en:'⚠️ Upload incomplete, retry',ru:'⚠️ Загрузка неполная, повторите'},
  panel:{ar:'☠ لوحة التحكم',ku:'☠ پانێڵی کۆنتڕۆڵ',en:'☠ Control Panel',ru:'☠ Панель управления'},
  ubtn:{ar:'⬆ رفع',ku:'⬆ ئەپڵۆد',en:'⬆ Upload',ru:'⬆ Загрузить'},
  drop:{ar:'اسحب وأفلت للرفع',ku:'ڕایکێشە و دابنێ بۆ ئەپڵۆد',en:'Drag & drop to upload',ru:'Перетащите для загрузки'},
@@ -420,7 +421,7 @@ async function doUpload(files,dir){
  for(let f of files){ustatus.textContent=f.name.slice(0,18);
   try{let b=await f.arrayBuffer();
    let r=await fetch('/api/upload?dir='+encodeURIComponent(d),{method:'POST',headers:{'X-Filename':encodeURIComponent(f.name)},body:b});
-   let j=await r.json();if(j.ok){toast('✅ '+f.name.slice(0,16));}else toast(T('failed')+' '+f.name.slice(0,10),true);
+   let j=await r.json();if(j.ok&&j.size===f.size){toast('✅ '+f.name.slice(0,16)+' ('+f.size+')');}else if(j.ok){toast(T('upBad'),true);}else toast(T('failed')+' '+f.name.slice(0,10),true);
   }catch(e){toast(T('failed'),true);}
  }ustatus.textContent='';if(dir)loadFiles(); else loadFiles();}
 upick.onchange=e=>{doUpload(e.target.files);e.target.value='';};
@@ -437,8 +438,8 @@ epick.onchange=async e=>{let fs=e.target.files; if(!fs.length)return;
  let dir=document.getElementById('efile').value; dir=dir?dir.substring(0,dir.lastIndexOf('/'))||'/data/work':fdir;
  for(let f of fs){estatus.textContent=f.name.slice(0,16);
   try{let b=await f.arrayBuffer(); let r=await fetch('/api/upload?dir='+encodeURIComponent(dir),{method:'POST',headers:{'X-Filename':encodeURIComponent(f.name)},body:b});
-   let j=await r.json(); if(j.ok){toast('✅ '+f.name.slice(0,16)); document.getElementById('efile').value=j.path; let rr=await fetch('/api/file?path='+encodeURIComponent(j.path)); if(rr.ok){let jj=await rr.json(); document.getElementById('eta').value=jj.content;}}
-   else toast(T('failed'),true);
+   let j=await r.json(); if(j.ok&&j.size===f.size){toast('✅ '+f.name.slice(0,16)+' ('+f.size+')'); document.getElementById('efile').value=j.path; let rr=await fetch('/api/file?path='+encodeURIComponent(j.path)); if(rr.ok){let jj=await rr.json(); document.getElementById('eta').value=jj.content;}}
+   else if(j.ok){toast(T('upBad'),true);}else toast(T('failed'),true);
   }catch(e){toast(T('failed'),true);}
  }estatus.textContent=''; e.target.value=''; loadFiles();};
 }

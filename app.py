@@ -285,7 +285,18 @@ class H(BaseHTTPRequestHandler):
             ln = int(self.headers.get("Content-Length", 0))
         except Exception:
             ln = 0
-        return self.rfile.read(ln) if ln > 0 else b""
+        if ln <= 0:
+            return b""
+        data = b""
+        try:
+            while len(data) < ln:
+                chunk = self.rfile.read(ln - len(data))
+                if not chunk:
+                    break
+                data += chunk
+        except Exception:
+            pass
+        return data
 
     def do_GET(self):
         u = urlparse(self.path)
